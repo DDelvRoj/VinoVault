@@ -15,8 +15,10 @@
     "typescript": "^3.3.3"
   },
   "dependencies": {
+    "@types/express-session": "^1.17.10",
     "cassandra-driver": "^4.7.2",
     "cassandra-store": "^5.0.0",
+    "express-cassandra": "^2.9.0",
     "express-session": "^1.18.0"
   }
 }
