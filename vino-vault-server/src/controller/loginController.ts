@@ -6,14 +6,17 @@ import bcrypt from 'bcrypt';
 
 const SECRET_KEY: string | undefined = process.env.CLAVE_FIRMA;
 
-const router = Router();
+const loginRouter = Router();
 
 
-router.post('/login', async (req: Request, res: Response) => {
+loginRouter.post('/login', async (req: Request, res: Response) => {
     const { username, password } = req.body;
     const cliente:UsuarioModel = new UsuarioModel(visorSesion);
     try {
-        await cliente.conectar();
+        if (await !cliente.conectar()){
+            res.status(500).json({ error: 'No se pudo conectar a la base de datos.' });
+            return;
+          };
         const user = await cliente.obtenerUsuarioPorUsername(username);
       if (!user) {
         return res.status(401).json({ error: 'Credenciales inválidas' });
@@ -34,3 +37,4 @@ router.post('/login', async (req: Request, res: Response) => {
     }
     await cliente.desconectar();
   });
+export default loginRouter;
