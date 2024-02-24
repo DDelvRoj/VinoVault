@@ -3,6 +3,7 @@ import { Client } from 'cassandra-driver';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import cors from 'cors';
+import { authenticateToken } from './middleware/authMiddleware';
 
 const app = express();
 const PORT: number = process.env.PORT ? parseInt(process.env.PORT) : 3000;
@@ -123,24 +124,6 @@ app.post('/login', async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Hubo un error al procesar tu solicitud' });
   }
 });
-
-// Middleware para autenticación con JWT
-function authenticateToken(req: Request, res: Response, next: NextFunction) {
-  const token = req.headers['authorization'];
-  if (!token) {
-    return res.status(401).json({ error: 'Token de autenticación requerido' });
-  }
-
-  jwt.verify(token.split(' ')[1], SECRET_KEY || '', (err, decoded) => {
-    if (err) {
-      return res.status(403).json({ error: 'Token de autenticación inválido' });
-    }
-
-    req['user'] = decoded; // Los datos del usuario decodificados se adjuntan a req.user
-    console.log(decoded);
-    next();
-  });
-}
 
 // Ruta protegida que requiere autenticación
 app.get('/protected', authenticateToken, async (req: Request, res: Response) => {
