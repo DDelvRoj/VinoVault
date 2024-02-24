@@ -32,7 +32,9 @@ export class UsuarioModel {
     const params = [userName];
     try {
       const result = await this.client.execute(query, params, { prepare: true });
-      return result.rows[0];
+      const user = result.first();
+      if(!user) return null;
+      return user;
     } catch (error) {
       console.error('Error al obtener usuario por Username:', error);
       throw { error: 'Credenciales inválidas' };
