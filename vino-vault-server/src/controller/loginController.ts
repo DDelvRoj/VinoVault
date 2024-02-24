@@ -30,7 +30,7 @@ loginRouter.post('/login', async (req: Request, res: Response) => {
   
       // Generar y enviar el token JWT
       const token = jwt.sign({ username: user.username }, SECRET_KEY || '');
-      console.log("Inicio de sesión éxitoso...");
+      console.log("Inicio de sesión LOGIN éxitoso...");
       res.json({ token });
     } catch (err) {
       res.status(500).json({ error: 'Hubo un error al procesar tu solicitud' });
