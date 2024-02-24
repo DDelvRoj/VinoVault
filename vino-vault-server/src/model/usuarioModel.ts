@@ -1,11 +1,17 @@
 import { Client } from "cassandra-driver";
+import { Credential } from "../type";
 
 
 export class UsuarioModel {
   client:  Client;
-  constructor(nClient: Client) {
+  constructor(credentials:Credential) {
     // Crear una conexión al cluster de Cassandra
-    this.client = nClient;
+    this.client = new Client({
+        contactPoints: ['127.0.0.1'], // Puedes cambiar esto a tus contact points
+        localDataCenter: 'datacenter1',
+        credentials: credentials,
+        keyspace: 'mykeyspace' // Asegúrate de cambiar esto al nombre de tu keyspace
+      });
   }
 
   async conectar() {
