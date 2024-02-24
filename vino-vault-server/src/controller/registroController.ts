@@ -17,7 +17,7 @@ registroRouter.post('/register', async (req: Request, res: Response) => {
       // Verificar si el usuario ya existe en la base de datos
       const existeElUsuario = await cliente.obtenerUsuarioPorUsername(username);
       console.log("Buscando usuario...");
-      if (existeElUsuario.rowLength > 0) {
+      if (existeElUsuario != null) {
         const error = { error: 'El usuario ya existe' };
         console.log(error);
         return res.status(400).json(error);
@@ -34,4 +34,7 @@ registroRouter.post('/register', async (req: Request, res: Response) => {
       res.status(500).json({ error: 'Hubo un error al procesar tu solicitud' });
     }
     await cliente.desconectar();
-  });
+  }
+);
+
+export default registroRouter;
