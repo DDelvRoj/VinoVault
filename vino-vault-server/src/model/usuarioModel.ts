@@ -1,7 +1,7 @@
 import { Client } from "cassandra-driver";
 
 
-export class UserModel {
+export class UsuarioModel {
   client:  Client;
   constructor(nClient: Client) {
     // Crear una conexión al cluster de Cassandra
