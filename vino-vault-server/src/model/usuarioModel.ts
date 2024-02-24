@@ -1,9 +1,9 @@
+import { Client } from "cassandra-driver";
 
-const { Client } = require('cassandra-driver');
 
-class UserModel {
-  client: typeof Client;
-  constructor(nClient:typeof Client) {
+export class UserModel {
+  client:  Client;
+  constructor(nClient: Client) {
     // Crear una conexión al cluster de Cassandra
     this.client = nClient;
   }
