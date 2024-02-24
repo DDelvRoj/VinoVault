@@ -11,7 +11,7 @@ const router = Router();
 
 router.post('/login', async (req: Request, res: Response) => {
     const { username, password } = req.body;
-    const cliente:UsuarioModel =   new UsuarioModel(visorSesion);
+    const cliente:UsuarioModel = new UsuarioModel(visorSesion);
     try {
         await cliente.conectar();
         const user = await cliente.obtenerUsuarioPorUsername(username);
