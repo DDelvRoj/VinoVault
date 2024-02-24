@@ -16,8 +16,19 @@ export class UsuarioModel {
 
   async conectar() {
     // Conectar al cluster de Cassandra
-    await this.client.connect();
-    console.log('Conexión exitosa a Cassandra');
+    return await this.client.connect().then(
+        ()=>{
+            console.log('Conexión exitosa a Cassandra.');
+            return true;
+        }
+    )
+    .catch(
+        (error)=>{
+            console.log('Error al conectar a Cassandra ',error);
+            return false;
+        }
+    );
+    
   }
 
   async desconectar() {
