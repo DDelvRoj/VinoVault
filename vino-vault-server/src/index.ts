@@ -1,52 +1,15 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response } from 'express';
 import { Client } from 'cassandra-driver';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import cors from 'cors';
 import { authenticateToken } from './middleware/authMiddleware';
+import { apagar, conectar, crearSesion, crearSesionVisor } from './service/cassandraService';
 
 const app = express();
 const PORT: number = process.env.PORT ? parseInt(process.env.PORT) : 3000;
-const visor: Request = {
-    body: {
-        username: "visor",
-        password: "visor"
-    }
-} as Request;
+
 const SECRET_KEY: string | undefined = process.env.CLAVE_FIRMA; // Clave secreta para firmar JWT
-
-// Permite crear un objeto de sesion para Cassandra
-const crearSesion = (req: Request): Client => {
-  const { username, password } = req.body;
-  console.log(`Objecto Cliente ${username} creado.`);
-  return new Client({
-    contactPoints: ['127.0.0.1'], // Puedes cambiar esto a tus contact points
-    localDataCenter: 'datacenter1',
-    credentials: { username: username, password: password },
-    keyspace: 'mykeyspace' // Asegúrate de cambiar esto al nombre de tu keyspace
-  });
-}
-
-// Conexión a Cassandra
-const conectar = async (cliente: Client): Promise<boolean> => {
-  try {
-    await cliente.connect();
-    console.log('Conexión exitosa a Cassandra');
-    return false;
-  } catch (err) {
-    console.error('Error al conectar a Cassandra', err);
-    return true;
-  }
-}
-
-// Cerrar conexión a Cassandra
-const apagar = async (cliente: Client): Promise<void> => {
-  await cliente.shutdown().then(() => {
-    console.log("Sesión cerrada.");
-  }).catch(err => {
-    console.error("Error al cerrar la sesión ", err);
-  })
-}
 
 const login = async (client: Client, username: string): Promise<any> => {
   try {
@@ -69,7 +32,7 @@ app.use(cors());
 // Ruta de registro de usuario
 app.post('/register', async (req: Request, res: Response) => {
   const { username, password } = req.body;
-  const client = crearSesion(visor);
+  const client = crearSesionVisor();
   try {
     if (await conectar(client)) return;
 
@@ -99,7 +62,7 @@ app.post('/register', async (req: Request, res: Response) => {
 // Ruta de inicio de sesión
 app.post('/login', async (req: Request, res: Response) => {
   const { username, password } = req.body;
-  const client = crearSesion(visor);
+  const client = crearSesionVisor();
   try {
 
     const user = await login(client, username);
@@ -129,7 +92,7 @@ app.post('/login', async (req: Request, res: Response) => {
 app.get('/protected', authenticateToken, async (req: Request, res: Response) => {
   try {
     const query = 'SELECT * FROM employees'; // Cambia esto al nombre de tu tabla de empleados
-    const client = crearSesion(visor);
+    const client = crearSesionVisor();
     await conectar(client);
     const result = await client.execute(query);
     await apagar(client);
