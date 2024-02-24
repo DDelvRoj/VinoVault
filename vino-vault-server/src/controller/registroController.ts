@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
-import bcrypt from 'bcrypt';
 import { UsuarioModel } from "../model/usuarioModel";
 import { visorSesion } from "../util/sesionUtil";
+import bcryptUtil from "../util/bcryptUtil";
 
 const registroRouter:Router = Router();
 
@@ -24,7 +24,7 @@ registroRouter.post('/register', async (req: Request, res: Response) => {
       }
       console.log("Creando usuario...");
       // Hashear la contraseña
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await bcryptUtil.encriptarPassword(password);
   
       // Insertar el nuevo usuario en la base de datos
       await cliente.crearUsuario(username,hashedPassword);

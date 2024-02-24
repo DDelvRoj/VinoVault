@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import { UsuarioModel } from "../model/usuarioModel";
 import { visorSesion } from "../util/sesionUtil";
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
+import bcryptUtil from "../util/bcryptUtil";
 
 const SECRET_KEY: string | undefined = process.env.CLAVE_FIRMA;
 
@@ -23,7 +23,7 @@ loginRouter.post('/login', async (req: Request, res: Response) => {
       }
   
       // Verificar la contraseña
-      const passwordMatch = await bcrypt.compare(password, user.password);
+      const passwordMatch = await bcryptUtil.desencriptarYCompararPassword(password, user.password);
       if (!passwordMatch) {
         return res.status(401).json({ error: 'Credenciales inválidas' });
       }
