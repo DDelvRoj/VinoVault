@@ -11,9 +11,7 @@ export class UsuarioService {
 
     async buscarUsuarioPorNombre (userName:string)  {
         try {
-            await this.usuario.conectar();
             const usuarioValor = await this.usuario.obtenerUsuarioPorUsername(userName);
-            await this.usuario.desconectar();
             return usuarioValor;
         } catch (error) {
             throw error;
@@ -22,9 +20,7 @@ export class UsuarioService {
 
     async crearUsuario(usuarioNuevo:Credential) {
         try {
-            await this.usuario.conectar();
             await this.crearUsuario(usuarioNuevo);
-            await this.usuario.desconectar();
         } catch (error) {
             throw error;
         }
