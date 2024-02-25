@@ -29,5 +29,21 @@ export class UsuarioService {
             throw error;
         }
     }
+
+    async conectar(){
+        try {
+            await this.usuario.conectar();
+        } catch (error) {
+            throw error;   
+        }
+    }
+    
+    async desconectar(){
+        try {
+            await this.usuario.desconectar();
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 

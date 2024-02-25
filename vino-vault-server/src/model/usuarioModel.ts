@@ -25,8 +25,12 @@ export class UsuarioModel {
 
   async desconectar() {
     // Desconectar del cluster de Cassandra
-    await this.client.shutdown();
-    console.log('Conexión cerrada a Cassandra');
+    try {
+      await this.client.shutdown();
+    } catch (error) {
+      throw error;
+    }
+    
   }
 
   async obtenerUsuarioPorUsername(userName:string) {
