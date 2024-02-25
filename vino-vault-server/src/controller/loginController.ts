@@ -10,6 +10,7 @@ loginRouter.post('/login', async (req: Request, res: Response) => {
     const { username, password } = req.body;
     const usuarioBuscador:UsuarioService = new UsuarioService(visorSesion);
     try {
+      await usuarioBuscador.conectar();
       const user = await usuarioBuscador.buscarUsuarioPorNombre(username);
       if(!user){
         return res.status(401).json({ error: 'Credenciales inválidas' });
@@ -27,6 +28,7 @@ loginRouter.post('/login', async (req: Request, res: Response) => {
     } catch (err) {
       res.status(500).json({ error: 'Hubo un error al procesar tu solicitud' });
     }
+    usuarioBuscador.desconectar();
   });
-  
+
 export default loginRouter;

@@ -10,13 +10,12 @@ registroRouter.post('/register', async (req: Request, res: Response) => {
     const { username, password } = req.body;
     const usuarioBuscador:UsuarioService = new UsuarioService(visorSesion);
     try {
+      await usuarioBuscador.conectar();
       // Verificar si el usuario ya existe en la base de datos
       const existeElUsuario = await usuarioBuscador.buscarUsuarioPorNombre(username);
       console.log("Buscando usuario...");
       if (existeElUsuario != null) {
-        const error = { error: 'El usuario ya existe' };
-        console.log(error);
-        res.status(400).json(error);
+        res.status(400).json({ error: 'El usuario ya existe' });
         return;
       }
       console.log("Creando usuario...");
@@ -27,11 +26,13 @@ registroRouter.post('/register', async (req: Request, res: Response) => {
       };
       // Insertar el nuevo usuario en la base de datos
       await usuarioBuscador.crearUsuario(nuevoUsuarioCredential);
+
       res.status(201).json({ message: 'Usuario registrado correctamente' });
     } catch (err) {
       console.error('Error al registrar usuario en Cassandra', err);
       res.status(500).json({ error: 'Hubo un error al procesar tu solicitud' });
     }
+    await usuarioBuscador.desconectar();
   }
 );
 
