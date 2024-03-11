@@ -4,10 +4,11 @@ import buscarCodigoDeBarra from "../service/webScrapingService";
 
 const productosRouter = Router();
 
-productosRouter.post('/productos', async (req: Request, res: Response) => {
+// Falta middleware de acceso
+productosRouter.get('/productos', async (req: Request, res: Response) => {
   try {
-    const {codigo} = req.body;
-    const producto:Producto = await buscarCodigoDeBarra(codigo);
+    const codigo = req.query.codigo;
+    const producto:Producto = await buscarCodigoDeBarra(codigo.toString());
     res.json(producto);
   } catch (error) {
     console.log(error);
