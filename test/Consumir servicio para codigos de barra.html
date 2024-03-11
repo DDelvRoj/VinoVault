@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Consumir API</title>
+</head>
+<body>
+    <h1>Producto</h1>
+    <form id="productoForm">
+        <label for="codigo">Código de barras XD:</label><br>
+        <input type="text" id="codigo" name="codigo"><br>
+        <input type="submit" value="Obtener Producto">
+    </form>
+    <p id="nombreProducto"></p>
+    <p id="descripcion"></p>
+    <p id="marca"></p>
+    <img id="imagen"/>
+
+    <script>
+        document.getElementById('productoForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const codigo = document.getElementById('codigo').value;
+
+            fetch(`http://localhost:3000/productos?codigo=${codigo}`, { // reemplaza con la URL de tu servidor
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                document.getElementById('nombreProducto').textContent = data.nombre;
+                document.getElementById('marca').textContent = data.marca;
+                document.getElementById('descripcion').textContent = data.descripcion;
+                document.getElementById('imagen').src = 'data:image/png;base64,' + data.imagen;
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
