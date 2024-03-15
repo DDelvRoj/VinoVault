@@ -48,7 +48,8 @@ sudo mkdir /usr/lib/jvm
 Continuamos uno por uno:
 ```bash
 sudo mv openlogic-openjdk-11.0.22+7-linux-x64 /usr/lib/jvm
-echo 'export PATH=$PATH:/usr/lib/jvm/openlogic-openjdk-11.0.22+7-linux-x64/bin' >> ~/.bashrc
+echo 'export JAVA_HOME=/usr/lib/jvm/openlogic-openjdk-11.0.22+7-linux-x64' >> ~/.bashrc
+echo 'export PATH=$PATH:$JAVA_HOME/bin' >> ~/.bashrc
 source ~/.bashrc
 ```
 Ahora, solamente toca probar si es que el java fue instalado correctamente:
@@ -66,7 +67,7 @@ source ~/.bashrc
 ```
 Una vez hecho todo esto, ingresar el siguiente comando que permitirá a Cassandra alterar sus propios datos, ya que es bastante dinámico, requiere permisos especiales, no como otras bases de datos:
 ```bash
-sudo chmod -R 777 /opt/apache-cassandra-4.0.12
+sudo chmod -R 777 $CASSANDRA_HOME
 ```
 Ahora solo toca eliminar los archivos comprimidos para liberar espacio, uno por uno, esto es opcional:
 ```bash
