@@ -14,9 +14,13 @@ dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux 
 dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
 ```
 Luego de que se completen los procesos de ambos comandos, **reiniciar su computador**, e instalar el kernel actualizado de windows x64 aquí -> [WSL Kernel](https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi).
-Una vez instalado, ejecutar con permisos de administrador el siguiente comando:
+Una vez instalado, ejecutar con **permisos de administrador en PowerShell** el siguiente comando:
 ```PowerShell
 wsl --set-default-version 2
+```
+Actualizamos los elementos faltantes con ayuda de nuestro nuevo kernel escribiendo:
+```PowerShell
+wsl --update
 ```
 Luego solamente es necesario descargar una distribución de Linux, en mi caso voy por la versión más típica que es Ubuntu, que se descargará directamente al usar el comando:
 ```PowerShell
@@ -56,7 +60,8 @@ Si todo salió bien, continuamos ahora con Cassandra, cada comando, uno por uno:
 wget https://dlcdn.apache.org/cassandra/4.0.12/apache-cassandra-4.0.12-bin.tar.gz
 tar -xzvf apache-cassandra-4.0.12-bin.tar.gz
 sudo mv apache-cassandra-4.0.12 /opt/
-echo 'export PATH=$PATH:/opt/apache-cassandra-4.0.12/bin' >> ~/.bashrc
+echo 'export CASSANDRA_HOME=/opt/cassandra >> ~/.bashrc
+echo 'export PATH=$PATH:$CASSANDRA_HOME/bin >> ~/.bashrc
 source ~/.bashrc
 ```
 Una vez hecho todo esto, ingresar el siguiente comando que permitirá a Cassandra alterar sus propios datos, ya que es bastante dinámico, requiere permisos especiales, no como otras bases de datos:
@@ -127,23 +132,34 @@ Para poder salir de Cqlsh:
 ```bash
 exit
 ```
-**Cerramos la terminal con Cassandra activo** y para poder activar la autenticación por contraseña seguir los pasos de este video [A partir del minuto 2 hasta el 3:02, y solamente modificar esa parte](https://www.youtube.com/watch?v=MN5q3LcGo0I), (que grandes son los Indios XD), solamente que con nuestra ruta que es
-``
-/opt/apache-cassandra-4.0.12
-``
+**Cerramos la terminal con Cassandra activo** y abrimos uno nuevo de Ubuntu, copiamos todo el texto que se encuentra en **cassandra-conf.txt** y hacemos estos comandos uno por uno:
+```PowerShell
+ubuntu
+touch cassandra.yaml
+nano cassandra.yaml #Luego de poner este comando, el texto copiado pegalo con CTRL + V y espera,
+# al ver el unico comentario es español que puse, presiona CTRL + X, luego Y, por ultimo ENTER para salir.
+sudo mv cassandra.yaml $CASSANDRA_HOME/conf
+#Este comando de abajo es opcional, solo para ver que los cambios fueron hechos, si vez el comentario en español
+#es porque todo salió exitosamente.
+cat $CASSANDRA_HOME/conf/cassandra.yaml
+```
 Volvemos a activar una terminal con 
-`` 
+``cql
 cassandra -f
 ``
 pero en otra lo haremos con:
-```bash
+```cql
 cqlsh -u cassandra -p cassandra
 ```
 Si lo hacemos sin
-``
+``cql
 -u cassandra -p cassandra
 ``
 ya no va a funcionar.
+Como bien se nota, es peligroso en ambientes de producción dejar el usuario ***cassandra*** con esa password e incluso el nombre ya que es un **super usuario**, tiene permiso absoluto sobre Cassandra DataBase, por tanto para cambiar al menos su contraseña, haremos:
+```cql
+ALTER USER cassandra WITH PASSWORD="la contraseña que se quiera poner";
+```
 #### Para la aplicación
 Antes que nada para evitar problemas abrir *Windows PowerShell* con **permisos de administrador** y poner el siguiente comando que evitará darnos problemas con comandos NodeJS en el futuro:
 ```PowerShell
