@@ -1,0 +1,48 @@
+.productContainer {
+
+    padding: 1rem;
+    border: 2px solid rgb(231, 231, 231);
+    background-color: white;
+    height: 17.5rem;
+    border-radius: 10px;
+}
+
+.coverImage {
+
+    height: 10rem;
+    background-color: white;
+    background-position: center center;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.productTitle {
+
+    font-size: 1rem;
+    letter-spacing: -0.03rem;
+	display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+  height: 40px;
+}
+
+.productInfo,
+.productRating {
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    align-content: center;
+}
+
+.productRating {
+
+    ion-icon {
+
+        margin-top: 0.1rem;
+    }
+
+    font-size: 0.9rem;
+}

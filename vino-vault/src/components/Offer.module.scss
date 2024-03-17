@@ -1,0 +1,31 @@
+.offer {
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-content: center;
+    align-items: center;
+
+    border-radius: 10px;
+    background-color: var(--ion-tab-bar-background);
+    color: white;
+    padding: 1rem;
+	padding-right: 2rem;
+	padding-left: 2rem;
+
+    h1, p {
+        padding: 0;
+        margin: 0;
+    }
+
+    p {
+
+        border-bottom: 1px solid white;
+        padding-bottom: 1rem;
+    }
+
+    img {
+
+        height: 6rem;
+    }
+}
