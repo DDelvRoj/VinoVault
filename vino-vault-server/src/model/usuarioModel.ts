@@ -16,25 +16,21 @@ export class UsuarioModel {
 
   async conectar() {
     // Conectar al cluster de Cassandra
-    return await this.client.connect().then(
-        ()=>{
-            console.log('Conexión exitosa a Cassandra.');
-            return true;
-        }
-    )
-    .catch(
-        (error)=>{
-            console.log('Error al conectar a Cassandra ',error);
-            return false;
-        }
-    );
-    
+    try {
+      await this.client.connect();
+    } catch (error) {
+      throw error;
+    }
   }
 
   async desconectar() {
     // Desconectar del cluster de Cassandra
-    await this.client.shutdown();
-    console.log('Conexión cerrada a Cassandra');
+    try {
+      await this.client.shutdown();
+    } catch (error) {
+      throw error;
+    }
+    
   }
 
   async obtenerUsuarioPorUsername(userName:string) {

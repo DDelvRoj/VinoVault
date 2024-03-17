@@ -7,9 +7,9 @@ import productosRouter from './controller/productosController';
 const app = express();
 const PORT: number = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
-// Middleware para parsear el cuerpo de las solicitudes
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
+
 app.use(loginRouter);
 app.use(registroRouter);
 app.use(productosRouter);
