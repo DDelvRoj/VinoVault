@@ -38,10 +38,9 @@ import {LoadingProvider } from './contexts/LoadingContext';
 setupIonicReact();
 
 const App: React.FC = () => {
-  
   return(
-    <LoadingProvider>
-      <IonApp>
+    <IonApp>
+      <LoadingProvider>
         <IonReactRouter>
           <IonTabs>
             <IonRouterOutlet>
@@ -74,8 +73,8 @@ const App: React.FC = () => {
             </IonTabBar>
           </IonTabs>
         </IonReactRouter>
-      </IonApp>
-    </LoadingProvider>
+      </LoadingProvider>
+    </IonApp>
   )
 };
 
