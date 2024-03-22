@@ -33,24 +33,24 @@ export class UsuarioModel {
     
   }
 
-  async obtenerUsuarioPorUsername(userName:string) {
+  async obtenerUsuarioPorId(id:string) {
     // Consultar el usuario por su ID
-    const query = 'SELECT * FROM users WHERE username = ?';
-    const params = [userName];
+    const query = 'SELECT * FROM usuarios WHERE id_usuario = ?';
+    const params = [id];
     try {
       const result = await this.client.execute(query, params, { prepare: true });
       const user = result.first();
       if(!user) return null;
       return user;
     } catch (error) {
-      console.error('Error al obtener usuario por Username:', error);
+      console.error('Error al obtener usuario por Usuario:', error);
       throw { error: 'Credenciales inválidas' };
     }
   }
 
   async crearUsuario(nombre:string, hashedPassword:string) {
     // Insertar un nuevo usuario en la tabla de usuarios
-    const query = 'INSERT INTO users (username, password, creado) VALUES (?, ?, ?)';
+    const query = 'INSERT INTO usuarios (uuid(), usuario, clave, creado) VALUES (?, ?, ?)';
     const params = [nombre, hashedPassword, false];
     try {
       await this.client.execute(query, params, { prepare: true });
