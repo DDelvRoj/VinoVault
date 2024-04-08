@@ -1,12 +1,12 @@
 import bcrypt from 'bcrypt';
 
 
-async function encriptarPassword(password:string){
-    return await bcrypt.hash(password, 10);
+async function encriptarData(data:string){
+    return await bcrypt.hash(data, 10);
 }
 
-async function desencriptarYCompararPassword(password:string, hasshedPassword:string){
-    return await bcrypt.compare(password, hasshedPassword);
+async function desencriptarYCompararData(data:string, hasshedData:string){
+    return await bcrypt.compare(data, hasshedData);
 }
 
-export default {encriptarPassword, desencriptarYCompararPassword};
+export default {encriptarData, desencriptarYCompararData};
