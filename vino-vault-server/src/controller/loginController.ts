@@ -4,37 +4,33 @@ import bcryptUtil from "../util/bcryptUtil";
 import { UsuarioService } from "../service/usuarioService";
 import { firmarToken } from "../util/tokenUtil";
 import { Credential } from "../type";
+import { ConexionDataBase } from "../model/conexionBD";
 
 const loginRouter = Router();
 
 loginRouter.post('/login', async (req: Request, res: Response) => {
-    const { username, password } = req.body;
-    const usuarioBuscador:UsuarioService = new UsuarioService(visorSesion);
+    const {username,password} = req.body;
+    console.log({username,password});
+    
+    const conexion:ConexionDataBase = new ConexionDataBase(visorSesion);
+    const usuarioBuscador:UsuarioService = new UsuarioService(conexion);
     try {
-      await usuarioBuscador.conectar();
-      const user = await usuarioBuscador.buscarUsuarioPorNombre(username);
+      await conexion.conectar();
+      const user = await usuarioBuscador.coindicenDatos({usuario:username, clave:password});
       if(!user){
         return res.status(401).json({ error: 'Credenciales inválidas' });
       }
-      // Verificar la contraseña
-      const passwordMatch = await bcryptUtil.desencriptarYCompararPassword(password, user.password);
-      if (!passwordMatch) {
-        return res.status(401).json({ error: 'Credenciales inválidas' });
-      }
-
-      const credenciales:Credential = {
-        username: username,
-        password: user.password
-      }
+      
+      
 
       // Generar y enviar el token JWT
-      const token = firmarToken(credenciales);
+      const token = firmarToken(user);
       console.log("Inicio de sesión LOGIN éxitoso...");
       res.json({ token });
     } catch (err) {
       res.status(500).json({ error: 'Hubo un error al procesar tu solicitud' });
     }
-    usuarioBuscador.desconectar();
+    await conexion.desconectar();
   });
 
 export default loginRouter;
