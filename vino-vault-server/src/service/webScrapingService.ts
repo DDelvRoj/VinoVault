@@ -1,6 +1,7 @@
 import puppeteer, { Page } from "puppeteer";
 import fetch from 'node-fetch';
 import { traducir } from "../util/traductorUtil";
+import { ProductoTemp } from "../type";
 
 async function buscarCodigoDeBarra (codigo:string){
     try {
@@ -59,9 +60,9 @@ async function buscarCodigoDeBarra (codigo:string){
         const imageData = await response.buffer();
         const base64ImageData = imageData.toString('base64');
         const descripcionTraducida:string = await traducir(descripcion);
-        const producto:Producto={
-            codigo: codigo,
-            nombre: nombreProducto,
+        const producto:ProductoTemp={
+            ean: codigo,
+            nombre_producto: nombreProducto,
             descripcion:descripcionTraducida,
             marca: marca,
             imagen: base64ImageData
