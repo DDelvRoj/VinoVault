@@ -1,64 +1,41 @@
-import { Client } from "cassandra-driver";
-import { Credential } from "../type";
+import { ConexionDataBase } from "./conexionBD";
+import { Usuario } from '../type/usuario.interface';
+import { BaseModel } from "./baseModel";
+import { UsuarioService } from '../service/usuarioService';
+import { transformarTexto } from "../util/trasformarTextoUtil";
 
 
-export class UsuarioModel {
-  client:  Client;
-  constructor(credentials:Credential) {
-    // Crear una conexión al cluster de Cassandra
-    this.client = new Client({
-        contactPoints: ['127.0.0.1'], // Puedes cambiar esto a tus contact points
-        localDataCenter: 'datacenter1',
-        credentials: credentials,
-        keyspace: 'mykeyspace' // Asegúrate de cambiar esto al nombre de tu keyspace
-      });
+export class UsuarioModel extends BaseModel<Usuario> {
+
+  private usuarioService:UsuarioService;
+
+  constructor(conexion:ConexionDataBase, usuarioService:UsuarioService) {
+    super('usuarios', conexion);
+    this.usuarioService = usuarioService;
   }
 
-  async conectar() {
-    // Conectar al cluster de Cassandra
+  async validarUsuarios (usuario:Usuario) {
     try {
-      await this.client.connect();
+      const usuarioValidableBuscado: Usuario = await this.usuarioService.coindicenDatos(usuario);
+      let usuarioValidableCopia:Usuario = Object.create(usuario);
+      usuarioValidableCopia.creado=true;
+      await this.modificar({id_usuario:usuario.id_usuario},usuarioValidableCopia);
+      const query = `CREATE USER IF NOT EXISTS '${usuarioValidableBuscado.usuario}' WITH PASSWORD='${transformarTexto(usuarioValidableBuscado.clave)}'`;
+      await this.conexion.getClient().execute(query,{prepared:true});
+      
     } catch (error) {
       throw error;
     }
   }
 
-  async desconectar() {
-    // Desconectar del cluster de Cassandra
-    try {
-      await this.client.shutdown();
-    } catch (error) {
-      throw error;
-    }
-    
+  override async eliminar(item: Usuario): Promise<void> {
+      try {
+        const usuarioDescifrado:Usuario = await this.buscar({id_usuario:item.id_usuario});
+        await super.eliminar(item);
+         
+      } catch (error) {
+        throw error;
+      }
   }
-
-  async obtenerUsuarioPorId(id:string) {
-    // Consultar el usuario por su ID
-    const query = 'SELECT * FROM usuarios WHERE id_usuario = ?';
-    const params = [id];
-    try {
-      const result = await this.client.execute(query, params, { prepare: true });
-      const user = result.first();
-      if(!user) return null;
-      return user;
-    } catch (error) {
-      console.error('Error al obtener usuario por Usuario:', error);
-      throw { error: 'Credenciales inválidas' };
-    }
-  }
-
-  async crearUsuario(nombre:string, hashedPassword:string) {
-    // Insertar un nuevo usuario en la tabla de usuarios
-    const query = 'INSERT INTO usuarios (uuid(), usuario, clave, creado) VALUES (?, ?, ?)';
-    const params = [nombre, hashedPassword, false];
-    try {
-      await this.client.execute(query, params, { prepare: true });
-      console.log('Usuario creado exitosamente');
-    } catch (error) {
-      console.error('Error al crear usuario:', error);
-      throw error;
-    }
-  }
-
+  
 }
