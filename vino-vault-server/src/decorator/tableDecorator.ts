@@ -11,12 +11,55 @@ function getMetadata(target: any): any {
 export function Entity(tabla: string): ClassDecorator {
     return function(target: any) {
         const tablaNombre = tabla;
-
         // Métodos para construir consultas SQL aquí
         Object.defineProperty(target.prototype, 'findAll', {
             get: function(){
-                const metadata = getMetadata(this.constructor);
                 return `SELECT * FROM ${tablaNombre}`;
+            },
+            configurable: true
+        });
+        Object.defineProperty(target.prototype, 'select', {
+            get: function(){
+                const metadata = getMetadata(this.constructor);
+                const ids = metadata.ids;
+                const where = ids.map(i=>`${i}=?`).filter(col=>col!=undefined && this[col] !== undefined && this[col] !== null).join(' AND ');
+                return `SELECT * FROM ${tablaNombre} ${(where===undefined || where===null)?'WHERE':''} ${where?where:''}`;
+            },
+            configurable: true
+        });
+        Object.defineProperty(target.prototype, 'delete', {
+            get: function(){
+                const metadata = getMetadata(this.constructor);
+                const ids = metadata.ids;
+                const where = ids.map(i=>`${i}=?`).filter(col=>col!=undefined && this[col] !== undefined && this[col] !== null).join(' AND ');
+                return `DELETE FROM ${tablaNombre} ${(where===undefined || where===null)?'WHERE':''} ${where?where:''}`;
+            },
+            configurable: true
+        });
+        
+        Object.defineProperty(target.prototype, 'insert', {
+            get: function(){
+                const metadata = getMetadata(this.constructor);
+                const columnas = [];
+                for (const prop of metadata.columnas) {
+                    const valor = this[prop];
+                    if (valor !== undefined && valor !== null) {
+                        columnas.push(prop);
+                    }
+                }
+                const ids = metadata.ids;
+                const uuid = metadata.uuid;
+                
+                const notIds = columnas.map(col => {
+                    if(!ids.includes(col)){
+                        return col;
+                    }
+                }).filter(col=>col!=undefined);
+                const insert = `(${notIds.join(', ')}${ids!=undefined && ids!=null?', ':''}${ids.map(id => id).join(', ')}) VALUES (${notIds.map(()=>'?').join(', ')}${ids!=undefined && ids!=null?', ':''}${ids.map(i=>{
+                    if(!uuid.includes(i)) return '?';
+                    return 'uuid()';
+                }).join(', ')})`;
+                return `INSERT INTO ${tablaNombre} ${insert}`;
             },
             configurable: true
         });
@@ -36,9 +79,9 @@ export function Entity(tabla: string): ClassDecorator {
                     if(!ids.includes(col)){
                         return `${col}=?`
                     }
-                }).filter(col=>col!=undefined).join(', ');
-                const whereClause = ids.map(id => `${id}=?`).join(' AND ');
-                return `UPDATE ${tablaNombre} SET ${setValues} WHERE ${whereClause}`;
+                }).filter(col=>col!=undefined ).join(', ');
+                const where = ids.map(i=>`${i}=?`).filter(col=>col!=undefined && this[col] !== undefined && this[col] !== null).join(' AND ');
+                return `UPDATE ${tablaNombre} SET ${setValues} ${(where===undefined || where===null)?'WHERE':''} ${where?where:''}`;
             },
             configurable: true
         });
@@ -46,16 +89,23 @@ export function Entity(tabla: string): ClassDecorator {
     };
 }
 
-export function Column(params?: { isId?: boolean }): PropertyDecorator {
+export function Column(params?: { esId?: boolean, esUUID?:boolean}): PropertyDecorator {
     return function(target: any, propertyKey: string) {
         const className = target.constructor.name;
         const metadata = getMetadata(target.constructor);
         metadata.columnas = metadata.columnas || [];
         metadata.columnas.push(propertyKey.replace(/^_/, ""));
 
-        if (params && params.isId) {
-            metadata.ids = metadata.ids || [];
-            metadata.ids.push(propertyKey);
+        if (params) {
+            if(params.esId){
+                metadata.ids = metadata.ids || [];
+                metadata.ids.push(propertyKey);
+            }
+            if(params.esUUID){
+                metadata.uuid = metadata.uuid || [];
+                metadata.uuid.push(propertyKey);
+            }
+            
         }
 
         Object.defineProperty(target, propertyKey, {
@@ -69,7 +119,22 @@ export function Column(params?: { isId?: boolean }): PropertyDecorator {
             enumerable: true,
             configurable: true
         });
-
+        Object.defineProperty(target, 'ids', {
+            get: function() {
+                const valores = [];
+                for (const prop of metadata.columnas) {
+                    if (metadata.ids.includes(prop)) {
+                        const valor = this[prop];
+                        if (valor !== undefined && valor !== null) {
+                            valores.push(valor);
+                        }
+                    }
+                }
+                return valores;
+            },
+            enumerable: false,
+            configurable: true
+        });
         Object.defineProperty(target, 'params', {
             get: function() {
                 const valores = [];
