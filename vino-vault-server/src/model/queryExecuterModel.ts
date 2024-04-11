@@ -7,6 +7,11 @@ export class QueryExecuterModel {
     constructor(conexion:ConexionDataBase){
         this.conexion = conexion;
     }
+    private esUUID = (item: string) => {
+        const regexUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        return regexUUID.test(item);
+
+    }
     async buscar(item: any): Promise<any> {
         try {
             const result = await this.conexion.getClient().execute(item['select'],item['ids'],{prepare:true});
@@ -24,7 +29,8 @@ export class QueryExecuterModel {
     }
     async insertar(item: any): Promise<void> {
         try {
-            await this.conexion.getClient().execute(item['insert'],item['params'],{prepare:true});
+            const params:[]= item['params'].filter(i=>!this.esUUID(i));
+            await this.conexion.getClient().execute(item['insert'],params,{prepare:true});
         } catch (error) {
             throw error;
         }
