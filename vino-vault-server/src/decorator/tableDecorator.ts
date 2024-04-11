@@ -21,18 +21,18 @@ export function Entity(tabla: string): ClassDecorator {
         Object.defineProperty(target.prototype, 'select', {
             get: function(){
                 const metadata = getMetadata(this.constructor);
-                const ids = metadata.ids;
-                const where = ids.map(i=>`${i}=?`).filter(col=>col!=undefined && this[col] !== undefined && this[col] !== null).join(' AND ');
-                return `SELECT * FROM ${tablaNombre} ${(where===undefined || where===null)?'WHERE':''} ${where?where:''}`;
+                const ids = this['ids'];
+                const where = ids.map(i=>`${i}=?`).filter(col=>col!=undefined ).join(' AND ');
+                return `SELECT * FROM ${tablaNombre} WHERE ${where}`;
             },
             configurable: true
         });
         Object.defineProperty(target.prototype, 'delete', {
             get: function(){
-                const metadata = getMetadata(this.constructor);
-                const ids = metadata.ids;
-                const where = ids.map(i=>`${i}=?`).filter(col=>col!=undefined && this[col] !== undefined && this[col] !== null).join(' AND ');
-                return `DELETE FROM ${tablaNombre} ${(where===undefined || where===null)?'WHERE':''} ${where?where:''}`;
+                const ids = this['ids'];
+                const where = ids.map(i=>`${i}=?`).filter(col=>col!=undefined ).join(' AND ');
+                
+                return `DELETE FROM ${tablaNombre} WHERE ${where}`;
             },
             configurable: true
         });
@@ -47,7 +47,7 @@ export function Entity(tabla: string): ClassDecorator {
                         columnas.push(prop);
                     }
                 }
-                const ids = metadata.ids;
+                const ids = this['ids'];
                 const uuid = metadata.uuid;
                 
                 const notIds = columnas.map(col => {
@@ -74,14 +74,15 @@ export function Entity(tabla: string): ClassDecorator {
                         columnas.push(prop);
                     }
                 }
-                const ids = metadata.ids;
+                const ids = this['ids'];
                 const setValues = columnas.map(col => {
                     if(!ids.includes(col)){
                         return `${col}=?`
                     }
                 }).filter(col=>col!=undefined ).join(', ');
-                const where = ids.map(i=>`${i}=?`).filter(col=>col!=undefined && this[col] !== undefined && this[col] !== null).join(' AND ');
-                return `UPDATE ${tablaNombre} SET ${setValues} ${(where===undefined || where===null)?'WHERE':''} ${where?where:''}`;
+                const where = ids.map(i=>`${i}=?`).filter(col=>col!=undefined).join(' AND ');
+                
+                return `UPDATE ${tablaNombre} SET ${setValues} WHERE ${where}`;
             },
             configurable: true
         });
@@ -126,7 +127,7 @@ export function Column(params?: { esId?: boolean, esUUID?:boolean}): PropertyDec
                     if (metadata.ids.includes(prop)) {
                         const valor = this[prop];
                         if (valor !== undefined && valor !== null) {
-                            valores.push(valor);
+                            valores.push(prop);
                         }
                     }
                 }
