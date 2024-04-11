@@ -2,10 +2,11 @@ import { Router, Request, Response } from "express";
 import { visorSesion } from "../util/sesionUtil";
 import bcryptUtil from "../util/bcryptUtil";
 import { UsuarioService } from "../service/usuarioService";
-import { Credential, Usuario } from "../type";
+import { Usuario as UsuarioInterface } from "../type";
 import { ConexionDataBase } from "../model/conexionBD";
 import { transformarTexto } from "../util/trasformarTextoUtil";
 import { types } from "cassandra-driver";
+import { Usuario } from "../entity/usuario";
 
 const registroRouter:Router = Router();
 
@@ -18,7 +19,7 @@ registroRouter.post('/register', async (req: Request, res: Response) => {
       await conexion.conectar();
       // Verificar si el usuario ya existe en la base de datos
 
-      const existeElUsuario = await usuarioBuscador.buscarUsuario({usuario:username});
+      const existeElUsuario = await usuarioBuscador.buscarUsuario(new Usuario({usuario:username}));
       console.log("Buscando usuario...");
       if (existeElUsuario != null) {
         res.status(400).json({ error: 'El usuario ya existe' });
@@ -26,14 +27,14 @@ registroRouter.post('/register', async (req: Request, res: Response) => {
       }
       console.log("Creando usuario...");
 
-      const nuevoUsuarioCredential:Usuario = {
-        id_usuario: types.Uuid.random(),
+      const nuevoUsuarioCredential:UsuarioInterface = {
+        id_usuario: types.Uuid.random().toString(),
         usuario: await bcryptUtil.encriptarData(transformarTexto(username)),
         clave: await bcryptUtil.encriptarData(transformarTexto(password)),
         creado: false
       };
       
-      await usuarioBuscador.crearUsuario(nuevoUsuarioCredential);
+      await usuarioBuscador.crearUsuario(new Usuario(nuevoUsuarioCredential));
 
       res.status(201).json({ message: 'Usuario registrado correctamente' });
     } catch (err) {
