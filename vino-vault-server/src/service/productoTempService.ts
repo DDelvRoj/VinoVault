@@ -1,25 +1,24 @@
 import { ConexionDataBase } from "../model/conexionBD";
-import { ProductoTempModel } from "../model/productoTempModel";
-import { ProductoTemp } from '../type/producto.interface';
+import { QueryExecuterModel } from "../model/queryExecuterModel";
 
 export class ProductoTempService {
 
-    private productoTempModel:ProductoTempModel;
+    private queryExecuter:QueryExecuterModel;
 
     constructor(conexion:ConexionDataBase){
-        this.productoTempModel = new ProductoTempModel(conexion);
+        this.queryExecuter = new QueryExecuterModel(conexion);
     }
 
-    async buscarProducto(item:ProductoTemp){
+    async buscarProducto(item:any){
         try {
-            return (await this.productoTempModel.buscar(item));
+            return (await this.queryExecuter.buscar(item));
         } catch (error) {
             throw error;
         }
     }
-    async crearProducto(item:ProductoTemp){
+    async crearProducto(item:any){
         try {
-            await this.productoTempModel.insertar(item);
+            await this.queryExecuter.insertar(item);
         } catch (error) {
             throw error;
         }
