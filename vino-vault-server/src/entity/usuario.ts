@@ -1,12 +1,11 @@
-import { types } from "cassandra-driver";
 import { Column, Entity } from "../decorator/tableDecorator";
 import { Usuario as Us } from "../type/index";
 
 
  @Entity("usuarios")
-class Usuario {
+export class Usuario {
    
-    private _id_usuario:types.Uuid;
+    private _id_usuario:string;
     private _nombre: string;
     private _usuario:string;
     private _clave:string;
@@ -14,17 +13,17 @@ class Usuario {
     private _admin: boolean;
 
     @Column({esId:true,esUUID:true})
-    public get id_usuario() : types.Uuid {
+    public get id_usuario() : string {
         return this._id_usuario
     }
     
     
-    public set id_usuario(id_usuario : types.Uuid) {
+    public set id_usuario(id_usuario : string) {
         this._id_usuario = id_usuario;
     }
     
 
-    @Column({esId:true})
+    @Column()
     public get nombre(): string {
         return this._nombre;
     }
@@ -33,7 +32,7 @@ class Usuario {
         this._nombre = value;
     }
 
-    @Column()
+    @Column({esId:true})
     public get usuario() : string {
         return this._usuario;
     }
@@ -86,11 +85,12 @@ class Usuario {
     
 }
 /*
-const usuario2 = new Usuario({usuario:'Charles', clave:'kuak',admin:true})
+
+const usuario2 = new Usuario({usuario:'Charles', clave:'kuak',admin:true, id_usuario:types.Uuid.random().toString()})
+console.log('Parametros',usuario2['params']);
+console.log('IDS', usuario2['ids']);
 console.log('Insert=>', usuario2['insert']);
 console.log('Update=>', usuario2['update']);
 console.log('Select=>', usuario2['select']);
 console.log('Delete=>', usuario2['delete']);
-console.log('Parametros',usuario2['params']);
-console.log('IDS', usuario2['ids']);
 */
