@@ -1,7 +1,5 @@
-import {types } from "cassandra-driver";
-
 export interface Usuario {
-    id_usuario?:types.Uuid,
+    id_usuario?:string,
     nombre?:string,
     usuario?:string, 
     clave?:string,
