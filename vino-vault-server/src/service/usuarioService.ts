@@ -1,20 +1,20 @@
+import { Usuario } from "../entity/usuario";
 import { ConexionDataBase } from "../model/conexionBD";
-import { UsuarioModel } from "../model/usuarioModel";
-import { Usuario } from "../type";
+import { QueryExecuterModel } from "../model/queryExecuterModel";
 import bcryptUtil from "../util/bcryptUtil";
 import { transformarTexto } from "../util/trasformarTextoUtil";
 
 export class UsuarioService {
     
-    private usuario:UsuarioModel;
+    private queryExecuter:QueryExecuterModel;
 
     constructor(conexion:ConexionDataBase){
-        this.usuario = new UsuarioModel(conexion, this);
+        this.queryExecuter = new QueryExecuterModel(conexion);
     }
 
-    async buscarUsuario (usuario:Usuario)  {
+    async buscarUsuario (queryExecuter:Usuario)  {
         try {
-            const usuarioValor = await this.usuario.buscar(usuario);
+            const usuarioValor = await this.queryExecuter.buscar(queryExecuter);
             return usuarioValor;
         } catch (error) {
             throw error;
@@ -24,16 +24,16 @@ export class UsuarioService {
     
     async coindicenDatos (nombre:Usuario)  {
         try {
-            const usuarios:Usuario[] = await this.usuario.listar();
-            const usuario:Usuario = await usuarios.map(async u => {
-                const usuarioValidacion = await bcryptUtil.desencriptarYCompararData(transformarTexto(nombre.usuario), u.usuario);
+            const usuarios = await this.queryExecuter.listar(new Usuario());
+            const queryExecuter:Usuario = await usuarios.map(async u => {
+                const usuarioValidacion = await bcryptUtil.desencriptarYCompararData(transformarTexto(nombre.nombre), u.queryExecuter);
                 const claveValidacion = await bcryptUtil.desencriptarYCompararData(transformarTexto(nombre.clave),u.clave);   
                 if(usuarioValidacion && claveValidacion){
                     return u;
                 }
             })[0];
-            if(usuario){
-                return usuario;
+            if(queryExecuter){
+                return queryExecuter;
             }
         } catch (error) {
             throw error;
@@ -41,7 +41,7 @@ export class UsuarioService {
     }
     async crearUsuario(usuarioNuevo:Usuario) {
         try {
-            await this.usuario.insertar(usuarioNuevo);
+            await this.queryExecuter.insertar(usuarioNuevo);
         } catch (error) {
             throw error;
         }
@@ -49,7 +49,7 @@ export class UsuarioService {
 
     async validarUsuario(usuarioValidable:Usuario){
         try {
-           await this.usuario.validarUsuarios(usuarioValidable);
+           //await this.queryExecuter.coincidenDatos(usuarioValidable);
         } catch (error) {
             throw error;
         }
