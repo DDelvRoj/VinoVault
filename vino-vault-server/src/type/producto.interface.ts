@@ -1,6 +1,5 @@
-import { types } from "cassandra-driver"
 export interface Producto {
-    id_producto?: types.Uuid,
+    id_producto?: string,
     ean?:string,
     nombre_producto?:string,
     cantidad?:number,
