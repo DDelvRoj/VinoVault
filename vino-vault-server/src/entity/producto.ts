@@ -1,4 +1,4 @@
-import { Column, Entity } from "../decorator/tableDecorator";
+import { Column, Entity } from "../decorator";
 import { Producto as pro } from "../type";
 
 @Entity('producto')

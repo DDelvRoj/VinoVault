@@ -1,11 +1,11 @@
-import { Column, Entity } from "../decorator/tableDecorator";
+import { Column, Entity } from "../decorator";
 import { Usuario as Us } from "../type/index";
 
 
  @Entity("usuarios")
 export class Usuario {
    
-    private _id_usuario:string;
+    private _id_usuario: string;
     private _nombre: string;
     private _usuario:string;
     private _clave:string;
@@ -13,7 +13,7 @@ export class Usuario {
     private _admin: boolean;
 
     @Column({esId:true,esUUID:true})
-    public get id_usuario() : string {
+    public get id_usuario() :  string{
         return this._id_usuario
     }
     
