@@ -62,6 +62,12 @@ export function Column(params?: { esId?: boolean, esUUID?:boolean}): PropertyDec
             enumerable: false,
             configurable: true
         });
+        Object.defineProperty(target, 'columnas',{
+            get: function(){
+                return metadata.columnas
+            },
+            configurable:true
+        })
         Object.defineProperty(target, 'params', {
             get: function() {
                 const valores = [];

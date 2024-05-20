@@ -1,8 +1,22 @@
 import { getMetadata } from "./metadataStorage";
 
-export function Entity(tabla: string): ClassDecorator {
+export function Entity(tabla: string,customCommands?:[any]): ClassDecorator {
     return function(target: any) {
         const tablaNombre = tabla;
+
+        // Posibilidad de
+        if (customCommands) {
+            const customCommandsMap:Map<string,string> = new Map<string, string>(customCommands);
+            for (const [key, value] of customCommandsMap.entries()) {
+                Object.defineProperty(target.prototype, key, {
+                    get: function(){
+                        return value;
+                    } ,
+                    configurable: true
+                });
+            }
+        }
+
         // Métodos para construir consultas SQL aquí
         Object.defineProperty(target.prototype, 'findAll', {
             get: function(){
@@ -12,7 +26,6 @@ export function Entity(tabla: string): ClassDecorator {
         });
         Object.defineProperty(target.prototype, 'select', {
             get: function(){
-                const metadata = getMetadata(this.constructor);
                 const ids = this['ids'];
                 const where = ids.map(i=>`${i}=?`).filter(col=>col!=undefined ).join(' AND ');
                 return `SELECT * FROM ${tablaNombre} WHERE ${where}`;
@@ -40,7 +53,7 @@ export function Entity(tabla: string): ClassDecorator {
                     }
                 }
                 const ids = this['ids'];
-                const uuid = metadata.uuid;
+                const uuid = metadata.uuid || [];
                 
                 const notIds = columnas.map(col => {
                     if(!ids.includes(col)){
