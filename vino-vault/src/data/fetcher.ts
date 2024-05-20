@@ -1,4 +1,5 @@
 import { ProductStore } from "./ProductStore.ts";
+import { Product, ProductCategory } from "./types.ts";
 
 
 
@@ -13,7 +14,7 @@ export const fetchData = async (): Promise<ProductCategory[]> => {
     let categoryName = category.replace(".json", "").replace("_", " ");
     categoryName = uppercaseWords(categoryName);
 
-    const productCategory: ProductCategory = {
+    const productCategory: any = {
       name: categoryName,
       slug: category.replace(".json", ""),
       cover: categoryProducts[6]?.image || "", // Agrega una verificación de existencia
