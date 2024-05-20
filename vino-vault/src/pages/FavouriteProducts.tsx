@@ -48,7 +48,7 @@ const FavouriteProducts : React.FC = () => {
         getFavourites();
     }, [ favourites ]);
 
-    const fetchMore = async (e) => {
+    const fetchMore = async (e:any) => {
 
 		//	Increment the amount loaded by 6 for the next iteration
 		setAmountLoaded(prevAmount => (prevAmount + 6));
