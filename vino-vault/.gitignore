@@ -9,8 +9,7 @@
 /coverage
 
 # production
-/dist
-/android
+/build
 
 # misc
 .DS_Store
@@ -18,8 +17,7 @@
 .env.development.local
 .env.test.local
 .env.production.local
-/.vscode/*
-!/.vscode/extensions.json
+.vscode
 .idea
 
 npm-debug.log*

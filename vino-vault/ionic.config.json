@@ -1,7 +1,7 @@
 {
-  "name": "ionic-app-base",
+  "name": "ionic-ecommerce-example",
   "integrations": {
     "capacitor": {}
   },
-  "type": "react-vite"
+  "type": "react"
 }
