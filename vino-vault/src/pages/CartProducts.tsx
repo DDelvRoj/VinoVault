@@ -49,7 +49,7 @@ const CartProducts : React.FC = () => {
     }, [ shopCart,products ]);
 
 
-    const removeProductFromCart = async (index) => {
+    const removeProductFromCart = async (index: number) => {
 
         removeFromCart(index);
     }
