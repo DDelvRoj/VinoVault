@@ -4,8 +4,7 @@ import bcryptUtil from "../util/bcryptUtil";
 import { UsuarioService } from "../service/usuarioService";
 import { Usuario as UsuarioInterface } from "../type";
 import { ConexionDataBase } from "../model/conexionBD";
-import { transformarTexto } from "../util/trasformarTextoUtil";
-import { types } from "cassandra-driver";
+import { transformarTexto } from "../util/transformarTextoUtil";
 import { Usuario } from "../entity/usuario";
 
 const registroRouter:Router = Router();
@@ -28,13 +27,14 @@ registroRouter.post('/register', async (req: Request, res: Response) => {
       console.log("Creando usuario...");
 
       const nuevoUsuarioCredential:UsuarioInterface = {
-        id_usuario: types.Uuid.random().toString(),
-        usuario: await bcryptUtil.encriptarData(transformarTexto(username)),
+        nombre:await bcryptUtil.encriptarData(transformarTexto(username)),
+        admin:false,
+        usuario:username ,
         clave: await bcryptUtil.encriptarData(transformarTexto(password)),
         creado: false
       };
       
-      await usuarioBuscador.crearUsuario(new Usuario(nuevoUsuarioCredential));
+      await usuarioBuscador.insertarUsuario(new Usuario(nuevoUsuarioCredential));
 
       res.status(201).json({ message: 'Usuario registrado correctamente' });
     } catch (err) {
