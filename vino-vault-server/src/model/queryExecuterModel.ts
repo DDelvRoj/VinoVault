@@ -52,4 +52,19 @@ export class QueryExecuterModel {
         }
     }
 
+    comandosCustoms(item:any, comando:string):void {
+        try {
+            const regex = /:(\w+)/g;
+            const newQuery:string = item[comando].replace(regex,(_, match)=>{
+                if(item.columnas && item.columnas.includes(match)){
+                    return item[match]
+                }
+            })
+            console.log(newQuery);
+            
+        } catch (error) {
+            throw error;
+        }
+    }
+
 }
