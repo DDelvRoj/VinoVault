@@ -25,7 +25,32 @@
             <button type="submit">Iniciar Sesión</button>
         </form>
     </div>
-
+    <button id="loadDataButton">Cargar Usuarios</button>
+    <div id="protectedData">
+        <table>
+                <thead>
+                    <tr>
+                        <th>Id Usuario</th>
+                        <th>Nombre</th>
+                        <th>Rol</th>
+                        <th>Creado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody"></tbody>
+        </table>
+        <h1>Producto</h1>
+        <form id="productoForm">
+            <label for="codigo">Código de barras XD:</label><br>
+            <input type="text" id="codigo" name="codigo"><br>
+            <input type="submit" value="Obtener Producto">
+        </form>
+        <p id="progress"></p>
+        <p id="nombreProducto"></p>
+        <p id="descripcion"></p>
+        <p id="marca"></p>
+        <img id="imagen"/>
+    </div>
     
 
     <script>
@@ -36,22 +61,69 @@
 
         // Función para cargar datos protegidos
         async function loadProtectedData() {
+            console.log('Invocaooo')
           try {
-              const response = await fetch(`${serverURL}/protected`, {
+              const response = await fetch(`${serverURL}/personas`, {
+                method:'GET',
+                
                   headers: {
                       'Authorization': `Bearer ${localStorage.getItem('token')}`
-                  }
+                  },
+                  
               });
+
               const data = await response.json();
+              console.log(data)
       
               // Si la respuesta es un array, iterar sobre los elementos
               if (Array.isArray(data)) {
-                  const employeeList = document.getElementById('employeeList');
-                  employeeList.innerHTML = '';
-                  data.forEach(employee => {
-                      const listItem = document.createElement('li');
-                      listItem.textContent = `${employee.id}: ${employee.name}`;
-                      employeeList.appendChild(listItem);
+                  const tableBody = document.getElementById('userTableBody');
+                  tableBody.innerHTML = '';
+                  data.forEach(user => {
+                    const row = document.createElement('tr');
+    
+                    // Celdas para Nombre y Email
+                    const celdaId = document.createElement('td');
+                    celdaId.textContent = user.id_usuario;
+                    row.appendChild(celdaId);
+
+        
+                    const nombreCelda = document.createElement('td');
+                    nombreCelda.textContent = user.usuario;
+                    row.appendChild(nombreCelda);
+
+                    const rolCelda = document.createElement('td');
+                    rolCelda.textContent = user.admin;
+                    row.appendChild(rolCelda);
+
+                    const creadoCelda = document.createElement('td');
+                    creadoCelda.textContent = user.creado;
+                    row.appendChild(creadoCelda);
+                    
+        
+                    // Celda para botones de Aceptar y Rechazar
+                    const actionsCell = document.createElement('td');
+        
+                    const acceptButton = document.createElement('button');
+                    acceptButton.textContent = 'Aceptar';
+                    acceptButton.addEventListener('click', () => {
+                        alert(`Usuario ${user.nombre} aceptado`);
+                        // Aquí puedes agregar la lógica para aceptar al usuario
+                    });
+                    actionsCell.appendChild(acceptButton);
+        
+                    const rejectButton = document.createElement('button');
+                    rejectButton.textContent = 'Rechazar';
+                    rejectButton.addEventListener('click', () => {
+                        alert(`Usuario ${user.nombre} rechazado`);
+                        // Aquí puedes agregar la lógica para rechazar al usuario
+                    });
+                    actionsCell.appendChild(rejectButton);
+        
+                    row.appendChild(actionsCell);
+        
+                    // Añadir fila a la tabla
+                    tableBody.appendChild(row);
                   });
               } else {
                   console.error('La respuesta del servidor no es un array:', data);
@@ -129,17 +201,7 @@
             }
         });
     </script>
-    <h1>Producto</h1>
-    <form id="productoForm">
-        <label for="codigo">Código de barras XD:</label><br>
-        <input type="text" id="codigo" name="codigo"><br>
-        <input type="submit" value="Obtener Producto">
-    </form>
-    <p id="progress"></p>
-    <p id="nombreProducto"></p>
-    <p id="descripcion"></p>
-    <p id="marca"></p>
-    <img id="imagen"/>
+   
 
     <script>
         document.getElementById('productoForm').addEventListener('submit', async function(event) {
@@ -174,7 +236,7 @@
                     let blob = await response.blob();
                     let reader = blob.stream().getReader();
 
-                    function leerTrozo() {
+                    async function leerTrozo() {
                         return reader.read().then(({ done, value }) => {
                             if (done) {
                                 return blob;
@@ -183,7 +245,7 @@
                             loaded += value.byteLength;
                             const progress = Math.round((loaded / total) * 100);
                             document.getElementById('progress').textContent = `Descargando: ${progress}%`;
-
+                            new Promise(resolve => setTimeout(resolve, 500));
                             return leerTrozo();
                         });
                     }
@@ -209,8 +271,9 @@
             document.getElementById('nombreProducto').textContent = data.nombre;
             document.getElementById('marca').textContent = data.marca;
             document.getElementById('descripcion').textContent = data.descripcion;
-            document.getElementById('imagen').src = 'data:image/png;base64,' + data.imagen;
+            document.getElementById('imagen').src =  `data:image/png;base64,${data.imagen}`;
         }
     </script>
+    
 </body>
 </html>
