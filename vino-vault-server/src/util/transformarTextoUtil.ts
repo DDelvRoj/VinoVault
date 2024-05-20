@@ -43,6 +43,6 @@ function invertirPalabras(texto:string){
 
 const nombre = transformarTexto("David");
 
-console.log(`\nTRASFORMAR\n-------------\n${nombre}.\n--------------------\n`);
+console.log(`\nTRANSFORMAR\n-------------\n${nombre}.\n--------------------\n`);
 console.log(`DESTRANSFORMAR\n-------------\n${destransformarTexto(nombre)}.\n--------------------\n`)
 
