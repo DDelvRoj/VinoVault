@@ -1,7 +1,7 @@
 import { Column, Entity } from "../decorator";
 import { Producto as pro } from "../type";
 
-@Entity('producto')
+@Entity('productos')
 export class Producto {
     private _id_producto:string;
     private _ean:string;
@@ -13,7 +13,7 @@ export class Producto {
     
     @Column({esId:true, esUUID:true})
     public get id_producto() : string {
-        return this._id_producto.toString();
+        return this._id_producto;
     }
     
     public set id_producto(v : string) {
@@ -84,10 +84,13 @@ export class Producto {
             this._cantidad=pro.cantidad;
             this._descripcion=pro.descripcion;
             this._ean=pro.ean;
-            this._id_producto=pro.ean;
+            this._id_producto=pro.id_producto;
             this._marca=pro.marca;
             this._nombre_producto=pro.nombre_producto;
             this._precio=pro.precio;
         }
     }
 }
+
+const pro = new Producto({ean:'4234234'})
+console.log(pro['select'])

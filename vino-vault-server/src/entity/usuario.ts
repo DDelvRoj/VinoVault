@@ -2,7 +2,10 @@ import { Column, Entity } from "../decorator";
 import { Usuario as Us } from "../type/index";
 
 
- @Entity("usuarios")
+
+ @Entity("usuarios" ,[
+    ['validar',"CREATE USER ':usuario' WITH PASSWORD ':clave'"]
+ ])
 export class Usuario {
    
     private _id_usuario: string;
@@ -84,13 +87,15 @@ export class Usuario {
     }
     
 }
-/*
 
-const usuario2 = new Usuario({usuario:'Charles', clave:'kuak',admin:true, id_usuario:types.Uuid.random().toString()})
-console.log('Parametros',usuario2['params']);
+
+const usuario2 = new Usuario({usuario:'Charles', clave:'kuak',admin:true});
+
+
+/*console.log('Parametros',usuario2['params']);
 console.log('IDS', usuario2['ids']);
 console.log('Insert=>', usuario2['insert']);
-console.log('Update=>', usuario2['update']);
+console.log('Update=>', usuario2['update']);*/
 console.log('Select=>', usuario2['select']);
-console.log('Delete=>', usuario2['delete']);
-*/
+/*console.log('Delete=>', usuario2['delete']);*/
+
