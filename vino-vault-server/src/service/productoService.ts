@@ -1,3 +1,4 @@
+import { Producto } from '../entity/producto';
 import { ConexionDataBase } from '../model/conexionBD';
 import { QueryExecuterModel } from '../model/queryExecuterModel';
 export class ProductoService {
@@ -8,7 +9,7 @@ export class ProductoService {
         this.queryExecuter = new QueryExecuterModel(conexion);
     }
 
-    async buscarProducto(item:any){
+    async buscarProducto(item:Producto){
         try {
             return await this.queryExecuter.buscar(item);
         } catch (error) {
@@ -16,7 +17,7 @@ export class ProductoService {
         }
     }
 
-    async crearProducto(item:any){
+    async crearProducto(item:Producto){
         try {
             await this.queryExecuter.insertar(item);
         } catch (error) {
@@ -24,7 +25,7 @@ export class ProductoService {
         }
     }
 
-    async modificarProducto(modificar:any){
+    async modificarProducto(modificar:Producto){
         try {
             await this.queryExecuter.modificar(modificar);
         } catch (error) {
