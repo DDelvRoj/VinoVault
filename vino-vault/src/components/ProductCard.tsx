@@ -20,30 +20,32 @@ const ProductCard : React.FC<ProductCardProps> = (props) => {
     const { product, category, index, cartRef } = props;
     const favourites = FavouritesStore.useState(s => s.product_ids);
 
-    const productCartRef = useRef();
-    const productFavouriteRef = useRef(null);
+    const productCartRef = useRef<HTMLIonIconElement>(null);
+    const productFavouriteRef = useRef<HTMLIonIconElement>(null);
     const [ isFavourite, setIsFavourite ] = useState(false);
 
     useEffect(() => {
 
         const tempIsFavourite = favourites.find(f => f === `${ category.slug }/${ product.id }`);
         setIsFavourite(tempIsFavourite ? true : false);
-    }, [props.product, favourites, category.slug, product.id]);
+    }, [props.product, favourites]);
 
-    const addProductToFavourites = (categorySlug: any, productID: any) => {
+    const addProductToFavourites = (e:any, categorySlug: any, productID: any) => {
 
-        //e.preventDefault();
-        //e.stopPropagation();
+        e.preventDefault();
+        e.stopPropagation();
         addToFavourites(categorySlug, productID);
 
 
-        //productFavouriteRef.current.style.display = "";
-      //  productFavouriteRef.current.classList.add("animate__fadeOutTopRight");
+        if(productFavouriteRef.current){
+            productFavouriteRef.current.style.display = "";
+            productFavouriteRef.current.classList.add("animate__fadeOutTopRight");
+        }
 
         setTimeout(() => {
-            if (productCartRef.current) {
-               // productFavouriteRef.current.classList.remove("animate__fadeOutTopRight");
-                //productFavouriteRef.current.style.display = "none";
+            if (productFavouriteRef.current) {
+               productFavouriteRef.current.classList.remove("animate__fadeOutTopRight");
+                productFavouriteRef.current.style.display = "none";
             }
         }, 500);
     }
@@ -53,8 +55,10 @@ const ProductCard : React.FC<ProductCardProps> = (props) => {
         e.preventDefault();
         e.stopPropagation();
 
-       // productCartRef.current.style.display = "";
-       // productCartRef.current.classList.add("animate__fadeOutUp");
+        if(productCartRef.current){
+            productCartRef.current.style.display = "";
+            productCartRef.current.classList.add("animate__fadeOutUp");
+        }
 
         setTimeout(() => {
 
@@ -64,7 +68,9 @@ const ProductCard : React.FC<ProductCardProps> = (props) => {
             setTimeout(() => {
                 
                 cartRef.current.classList.remove("animate__tada");
-            //    productCartRef.current.style.display = "none";
+                if(productCartRef.current){
+                    productCartRef.current.style.display = "none";
+                }
             }, 500);
         }, 500);
     }
@@ -75,7 +81,7 @@ const ProductCard : React.FC<ProductCardProps> = (props) => {
             <IonCard routerLink={`/category/${category.slug}/${product.id}`} className="categoryCard">
                 <IonCardHeader className="productCardHeader">
                     <div className="productCardActions">
-                        <IonIcon className="productCardAction" color={isFavourite ? "danger" : "medium"} icon={isFavourite ? heart : heartOutline} onClick={() => addProductToFavourites(category.slug, product.id)}/>
+                        <IonIcon className="productCardAction" color={isFavourite ? "danger" : "medium"} icon={isFavourite ? heart : heartOutline} onClick={(e) => addProductToFavourites(e,category.slug, product.id)}/>
                         <IonIcon ref={ productFavouriteRef } style={{ position: "absolute", display: "none" }} className="productCardAction animate__animated " color="danger" icon={ heart } />
                         <IonIcon className="productCardAction" size="medium" icon={arrowRedoOutline} />
                     </div>
@@ -93,7 +99,7 @@ const ProductCard : React.FC<ProductCardProps> = (props) => {
                             <IonIcon icon={cartOutline}  />
                         </IonButton>
 
-                        <IonIcon icon={ cart } color="dark" style={{ position: "absolute", display: "none", fontSize: "3rem" }} className="animate__animated" />
+                        <IonIcon ref={productCartRef} icon={ cart } color="dark" style={{ position: "absolute", display: "none", fontSize: "3rem" }} className="animate__animated" />
                     </div>
                 </IonCardContent>
             </IonCard>
