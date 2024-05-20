@@ -31,22 +31,22 @@ const CategoryProducts : React.FC = () => {
             setCategory(tempCategory);
             setsearchResults(tempCategory.products);
         }
-    }, [ params.slug ,products]);
+    }, [ params.slug]);
 
-    const fetchMore = async (e) => {
+    const fetchMore = async (e:any) => {
 
 		//	Increment the amount loaded by 6 for the next iteration
 		setAmountLoaded(prevAmount => (prevAmount + 6));
 		e.target.complete();
 	}
 
-    const search = async e => {
+    const search = async (e:React.KeyboardEvent<HTMLIonSearchbarElement>) => {
 
-        const searchVal = e.target.value;
+        const searchVal = e.currentTarget.value;
 
         if (searchVal !== "") {
          
-            const tempResults :Product[]|undefined= category.products?.filter(p => p.name?.toLowerCase().includes(searchVal.toLowerCase()));
+            const tempResults :Product[]|undefined= category.products?.filter(p => p.name?.toLowerCase().includes((searchVal?searchVal.toLowerCase():'')));
             if (tempResults!==undefined){
                 setsearchResults(tempResults);
             }
