@@ -1,6 +1,6 @@
-import { IonBadge, IonButton, IonButtons, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonInfiniteScroll, IonInfiniteScrollContent, IonNote, IonPage, IonRow, IonSearchbar, IonTitle, IonToolbar } from "@ionic/react";
+import { IonBadge, IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonHeader, IonIcon, IonInfiniteScroll, IonInfiniteScrollContent, IonNote, IonPage, IonRow, IonSearchbar, IonTitle, IonToolbar } from "@ionic/react";
 import {useParams} from 'react-router-dom'
-import { cart, chevronBackOutline, searchOutline } from "ionicons/icons";
+import { add, addCircle, cart, chevronBackOutline, searchOutline } from "ionicons/icons";
 import { useEffect, useRef, useState } from "react";
 import ProductCard from "../components/ProductCard.tsx";
 
@@ -71,7 +71,7 @@ const CategoryProducts : React.FC = () => {
                         </IonButton>
                     </IonButtons>
 					<IonTitle>{ category && category.name }</IonTitle>
-
+                    
                     <IonButtons slot="end">
                         <IonBadge color="dark">
                             { shopCart.length }
@@ -113,7 +113,13 @@ const CategoryProducts : React.FC = () => {
 					<IonInfiniteScrollContent loadingSpinner="bubbles" loadingText="Fetching more...">
 					</IonInfiniteScrollContent>
 				</IonInfiniteScroll>
+                <IonFab vertical="bottom" horizontal="end" slot="fixed">
+            <IonFabButton color="dark" routerLink="/registrar-producto">
+                <IonIcon icon={add} />
+            </IonFabButton>
+        </IonFab>
             </IonContent>
+            
         </IonPage>
     );
 }
