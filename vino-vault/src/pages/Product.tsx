@@ -1,5 +1,5 @@
 import { IonBadge, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonPage, IonRow, IonTitle, IonToolbar } from "@ionic/react";
-import { arrowRedoOutline, cart, cartOutline, chevronBackOutline, heart, heartOutline } from "ionicons/icons";
+import { addCircle, arrowRedoOutline, cart, cartOutline, chevronBackOutline, heart, heartOutline } from "ionicons/icons";
 import { useEffect, useRef, useState } from "react";
 import ProductCard from "../components/ProductCard.tsx";
 import { addToCart, CartStore } from "../data/CartStore.ts";
@@ -93,6 +93,11 @@ const Product : React.FC = () => {
 						<IonButton color="dark" routerLink="/cart">
 							<IonIcon ref={ cartRef } className="animate__animated" icon={ cart } />
 						</IonButton>
+                
+                            
+                        <IonButtons slot="end">
+                        
+                        </IonButtons>
 					</IonButtons>
 				</IonToolbar>
 			</IonHeader>

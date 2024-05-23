@@ -1,0 +1,35 @@
+{
+  "files": {
+    "main.css": "./static/css/main.56492a95.css",
+    "main.js": "./static/js/main.f37a09c4.js",
+    "static/js/284.4890d814.chunk.js": "./static/js/284.4890d814.chunk.js",
+    "static/js/304.cd76c995.chunk.js": "./static/js/304.cd76c995.chunk.js",
+    "static/js/867.fa9df07d.chunk.js": "./static/js/867.fa9df07d.chunk.js",
+    "static/js/923.60fdd941.chunk.js": "./static/js/923.60fdd941.chunk.js",
+    "static/js/627.b989c2f0.chunk.js": "./static/js/627.b989c2f0.chunk.js",
+    "static/js/938.0bff9965.chunk.js": "./static/js/938.0bff9965.chunk.js",
+    "static/js/247.f7e3cbf9.chunk.js": "./static/js/247.f7e3cbf9.chunk.js",
+    "static/js/82.a00f9b4d.chunk.js": "./static/js/82.a00f9b4d.chunk.js",
+    "static/js/434.271159b8.chunk.js": "./static/js/434.271159b8.chunk.js",
+    "static/js/440.66a51f10.chunk.js": "./static/js/440.66a51f10.chunk.js",
+    "static/js/834.81361968.chunk.js": "./static/js/834.81361968.chunk.js",
+    "index.html": "./index.html",
+    "main.56492a95.css.map": "./static/css/main.56492a95.css.map",
+    "main.f37a09c4.js.map": "./static/js/main.f37a09c4.js.map",
+    "284.4890d814.chunk.js.map": "./static/js/284.4890d814.chunk.js.map",
+    "304.cd76c995.chunk.js.map": "./static/js/304.cd76c995.chunk.js.map",
+    "867.fa9df07d.chunk.js.map": "./static/js/867.fa9df07d.chunk.js.map",
+    "923.60fdd941.chunk.js.map": "./static/js/923.60fdd941.chunk.js.map",
+    "627.b989c2f0.chunk.js.map": "./static/js/627.b989c2f0.chunk.js.map",
+    "938.0bff9965.chunk.js.map": "./static/js/938.0bff9965.chunk.js.map",
+    "247.f7e3cbf9.chunk.js.map": "./static/js/247.f7e3cbf9.chunk.js.map",
+    "82.a00f9b4d.chunk.js.map": "./static/js/82.a00f9b4d.chunk.js.map",
+    "434.271159b8.chunk.js.map": "./static/js/434.271159b8.chunk.js.map",
+    "440.66a51f10.chunk.js.map": "./static/js/440.66a51f10.chunk.js.map",
+    "834.81361968.chunk.js.map": "./static/js/834.81361968.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.56492a95.css",
+    "static/js/main.f37a09c4.js"
+  ]
+}

@@ -7,13 +7,23 @@ import { cart, heart } from 'ionicons/icons';
 import { ProductStore } from '../data/ProductStore.ts';
 import { FavouritesStore } from '../data/FavouritesStore.ts';
 import { CartStore } from '../data/CartStore.ts';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 const Home : React.FC = ()=> {
 
   	const products = ProductStore.useState(s => s.products);
   	const favourites = FavouritesStore.useState(s => s.product_ids);
 	const shopCart = CartStore.useState(s => s.product_ids);
+	//se memoizan las categorias para que solo se calculen una vez no se q
+	const uniqueCategories = useMemo(() => {
+        const categoryMap = new Map();
+        products.forEach(product => {
+            if (!categoryMap.has(product.slug)) {
+                categoryMap.set(product.slug, product);
+            }
+        });
+        return Array.from(categoryMap.values());
+    }, [products]);
 
 	return (
 		<IonPage id="home-page" className="homePage ">
@@ -54,7 +64,7 @@ const Home : React.FC = ()=> {
 
 				<IonGrid>
 					<IonRow>
-						{ products.map((category, index) => {
+						{ uniqueCategories.map((category, index) => {
 
 							return (
 								<IonCol size="6" key={ `category_list_${ index }`}>
