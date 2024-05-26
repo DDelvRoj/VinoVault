@@ -35,8 +35,9 @@ export function Entity(tabla: string,customCommands?:[any]): ClassDecorator {
 
         Object.defineProperty(target.prototype, 'delete', {
             get: function(){
-                const ids = this['ids'];
-                const where = ids.map(i=>`${i}=?`).filter(col=>col!=undefined ).join(' AND ');
+                const metadata = getMetadata(this.constructor);
+                const uuid = metadata.uuid;
+                const where = `${uuid}=?`
                 return `DELETE FROM ${tablaNombre} WHERE ${where}`;
             },
             configurable: true
@@ -71,11 +72,16 @@ export function Entity(tabla: string,customCommands?:[any]): ClassDecorator {
             get: function(){
                 const metadata = getMetadata(this.constructor);
                 const uuid = metadata.uuid;
+                const ids = metadata.ids;
                 const columnas = [];
                 for (const prop of metadata.columnas) {
                     const valor = this[prop];
                     if (valor !== undefined && prop !== uuid) {
-                        columnas.push(prop);
+                        if(!ids.includes(prop)){
+                            columnas.unshift(prop);
+                        }else{
+                            columnas.push(prop)
+                        }
                     }
                 }
                 const setValues = columnas.map(col=>`${col}=?`).filter(col=>col!=undefined ).join(', ');
