@@ -34,6 +34,7 @@ export function Column(params?: { esId?: boolean, esUUID?:boolean}): PropertyDec
             get: function() {
                 const valorUUID = this[metadata.uuid]
                 const valores = [];
+                const uuid = metadata.uuid;
                 if(valorUUID===undefined){
                     for (const prop of metadata.columnas) {
                         if (metadata.ids.includes(prop)) {
@@ -43,7 +44,7 @@ export function Column(params?: { esId?: boolean, esUUID?:boolean}): PropertyDec
                             }
                         }
                     }
-                }else if(metadata.uuid!==""){
+                }else if(uuid!=="" && uuid!==undefined){
                     valores.push(metadata.uuid);
                 }
                 return valores;
@@ -75,7 +76,7 @@ export function Column(params?: { esId?: boolean, esUUID?:boolean}): PropertyDec
                         }
                     }
                 }
-                if(uuid!=="" && this[uuid]!==undefined){
+                if((uuid!==undefined && uuid!=="") && this[uuid]!==undefined){
                     valores.push(this[uuid])
                 }
                 return valores;

@@ -58,7 +58,7 @@ export function Entity(tabla: string,customCommands?:[any]): ClassDecorator {
                         }
                     }
                 }
-                if(uuid!==""){
+                if(uuid!=="" && uuid!==undefined){
                     columnas.push(uuid);
                 }
                 const insert = `(${columnas.join(', ')}) VALUES (${columnas.map(col=>(col!==uuid?'?':'uuid()')).join(', ')})`;
