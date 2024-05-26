@@ -14,7 +14,7 @@ export class QueryExecuterModel {
     }
     async buscar(item: any): Promise<any> {
         try {
-            const result = await this.conexion.getClient().execute(item['select'],item['idsParams'],{prepare:true});    
+            const result = await this.conexion.getClient().execute(item['select'],item['params'],{prepare:true});    
             return result.first();
         } catch (error) {
             throw error;
@@ -22,7 +22,7 @@ export class QueryExecuterModel {
     }
     async eliminar(item: any): Promise<void> {
         try {
-            await this.conexion.getClient().execute(item['delete'],item['idsParams'],{prepare:true});
+            await this.conexion.getClient().execute(item['delete'],item['params'],{prepare:true});
         } catch (error) {
             throw error;
         }
