@@ -12,6 +12,20 @@ import { getConexionCargada } from "../util/conexionUtil";
 
 const productosRouter = Router();
 
+productosRouter.get('/productos/:id',authenticateToken, async(req:Request, res:Response)=>{
+  try {  
+    const producto:Producto = new Producto({id_producto:req.params['id']});
+    const conexion:ConexionDataBase = getConexionCargada(req);
+    await conexion.conectar();
+    const resultado = await new ProductoService(conexion).buscarProducto(producto);
+    await conexion.desconectar();
+    res.json(resultado);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({error:'error'})
+  }
+})
+
 productosRouter.put('/productos',authenticateToken, async(req:Request, res:Response)=>{
   try {
     const conexion:ConexionDataBase = getConexionCargada(req);
