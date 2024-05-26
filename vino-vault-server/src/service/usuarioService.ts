@@ -32,7 +32,6 @@ export class UsuarioService {
             throw error;
         }
     }
-
     
     async coindicenDatos (usuario:Usuario)  {
         try {
@@ -69,7 +68,7 @@ export class UsuarioService {
         try {
             await this.queryExecuter.comandosCustoms(usuario,'validar');
         } catch (error) {
-            
+            throw error;
         }
     }
 }
