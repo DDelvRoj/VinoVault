@@ -9,6 +9,13 @@ export class ProductoService {
         this.queryExecuter = new QueryExecuterModel(conexion);
     }
 
+    async listarProductos(){
+        try {
+            return await this.queryExecuter.listar(new Producto())
+        } catch (error) {
+            throw error;
+        }
+    }
     async buscarProducto(item:Producto){
         try {
             return await this.queryExecuter.buscar(item);
