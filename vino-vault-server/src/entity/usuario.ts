@@ -82,7 +82,7 @@ export class Usuario {
             this._id_usuario = usuario.id_usuario;
             this._nombre = usuario.nombre;
             this._pseudoclave = usuario.pseudoclave;
-            this._admin = (usuario.admin !== undefined && usuario.admin !== null ? usuario.admin : false);
+            this._admin = usuario.admin;
             this._usuario = usuario.usuario;
             this._clave = usuario.clave;
             this._creado = usuario.creado;
