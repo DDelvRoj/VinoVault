@@ -3,13 +3,13 @@ import { Producto as pro } from "../type";
 
 @Entity('productos')
 export class Producto {
-    private _id_producto:string;
+    private _id_producto:string = null;
     private _ean:string;
-    private _cantidad:number;
+    private _cantidad:number = 0;
     private _descripcion:string;
     private _marca:string;
     private _nombre_producto:string;
-    private _precio:number;
+    private _precio:number = 0;
     
     @Column({esId:true, esUUID:true})
     public get id_producto() : string {
@@ -91,6 +91,3 @@ export class Producto {
         }
     }
 }
-
-const pro = new Producto({ean:'4234234'})
-console.log(pro['select'])
