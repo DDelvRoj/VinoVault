@@ -60,7 +60,7 @@ export class QueryExecuterModel {
                     return item[match]
                 }
             })
-            console.log(newQuery);
+            console.log(`COMANDO: ${item[comando]}\nNUEVO COMANDO: ${newQuery}`);
             
         } catch (error) {
             throw error;
