@@ -70,6 +70,3 @@ export class ProductoTemp {
         }
     }
 }
-
-const prod = new ProductoTemp({ean:'34234',marca:'sda',descripcion:'adsada',imagen:'fdafsdsfd',nombre_producto:'dsadad'})
-console.log(prod['insert']);
