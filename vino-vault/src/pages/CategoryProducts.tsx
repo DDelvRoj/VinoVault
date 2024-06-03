@@ -1,8 +1,9 @@
-import { IonBadge, IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonHeader, IonIcon, IonInfiniteScroll, IonInfiniteScrollContent, IonNote, IonPage, IonRow, IonSearchbar, IonTitle, IonToolbar } from "@ionic/react";
+import { IonBadge, IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonFabList, IonGrid, IonHeader, IonIcon, IonInfiniteScroll, IonInfiniteScrollContent, IonNote, IonPage, IonRow, IonSearchbar, IonTitle, IonToolbar } from "@ionic/react";
 import {useParams} from 'react-router-dom'
-import { add, addCircle, cart, chevronBackOutline, searchOutline } from "ionicons/icons";
+import { add, addCircle, cart, chevronBackOutline, personCircleOutline, searchOutline, settingsOutline } from "ionicons/icons";
 import { useEffect, useRef, useState } from "react";
 import ProductCard from "../components/ProductCard.tsx";
+//import UserSettings from './pages/UserSettings';
 
 import { CartStore } from "../data/CartStore.ts";
 import { ProductStore } from "../data/ProductStore.ts";
@@ -114,10 +115,18 @@ const CategoryProducts : React.FC = () => {
 					</IonInfiniteScrollContent>
 				</IonInfiniteScroll>
                 <IonFab vertical="bottom" horizontal="end" slot="fixed">
-            <IonFabButton color="dark" routerLink="/registrar-producto">
-                <IonIcon icon={add} />
-            </IonFabButton>
-        </IonFab>
+                    <IonFabButton color="dark">
+                        <IonIcon icon={settingsOutline} />
+                    </IonFabButton>
+                    <IonFabList side="top">
+                        <IonFabButton color="dark" routerLink="/registrar-producto">
+                            <IonIcon icon={add} />
+                        </IonFabButton>
+                        <IonFabButton color="dark" routerLink="/ajustes-usuario">
+                            <IonIcon icon={personCircleOutline} />
+                        </IonFabButton>
+                    </IonFabList>
+                </IonFab>
             </IonContent>
             
         </IonPage>

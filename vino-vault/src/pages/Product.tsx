@@ -6,6 +6,7 @@ import { addToCart, CartStore } from "../data/CartStore.ts";
 import { addToFavourites, FavouritesStore } from "../data/FavouritesStore.ts";
 import { ProductStore } from "../data/ProductStore.ts";
 
+
 import "./Product.css";
 import React from "react";
 import { Product as ProductType, ProductCategory } from "../data/types.ts";
