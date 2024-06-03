@@ -22,7 +22,7 @@ productosRouter.get('/productos/:id',authenticateToken, async(req:Request, res:R
     res.json(resultado);
   } catch (error) {
     console.log(error);
-    res.status(500).json({error:'error'})
+    res.status(500).json({error:error})
   }
 })
 
@@ -38,11 +38,11 @@ productosRouter.put('/productos',authenticateToken, async(req:Request, res:Respo
     res.json({estado:'Inserción exitosa.'})
   } catch (error) {
     console.log(error);
-    res.status(500).json({error:'error'})
+    res.status(500).json({error:`Error al insertar los productos: ${error}`})
   }
 })
 
-productosRouter.get('/productos/todos',authenticateToken, async(req:Request, res:Response)=>{
+productosRouter.get('/productos/listar/todos',authenticateToken, async(req:Request, res:Response)=>{
   try {
     const conexion:ConexionDataBase = getConexionCargada(req);
     await conexion.conectar();
@@ -54,7 +54,7 @@ productosRouter.get('/productos/todos',authenticateToken, async(req:Request, res
   } catch (error) {
     console.log(error);
     
-    res.status(500).json({error:'error'});
+    res.status(500).json({error:error});
   }
 })
 
@@ -86,7 +86,7 @@ async (req: Request, res: Response) => {
         return resultado !== undefined ? resultado : null;
     } catch (error) {
         // Manejar cualquier error que pueda ocurrir durante la ejecución
-        console.error('Error al buscar el producto:', error);
+        console.error('Error al obtener el producto:', error);
         throw error;
     }
   };
@@ -107,7 +107,7 @@ async (req: Request, res: Response) => {
     res.json(producto);
   } catch (error) {
     console.log(error);
-    res.status(500).json({error:'error'});
+    res.status(500).json({error:`Error al obtener el producto: ${error}`});
   }
 });
 
