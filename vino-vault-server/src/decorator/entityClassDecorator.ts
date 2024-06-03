@@ -27,7 +27,7 @@ export function Entity(tabla: string,customCommands?:[any]): ClassDecorator {
             get: function(){
                 const ids = this['ids'];
                 const where = ids.map(i=>`${i}=?`).filter(col=>col!=undefined ).join(' AND ')
-                + (ids.length>=1 && this['uuid']===""?' ALLOW FILTERING':"");
+                + (ids.length>=1 && (this['uuid']===""|| this['uuid'] === undefined)?' ALLOW FILTERING':"");
                 return `SELECT * FROM ${tablaNombre} WHERE ${where}`;
             },
             configurable: true
