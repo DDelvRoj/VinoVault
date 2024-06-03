@@ -6,17 +6,16 @@ export function Column(params?: { esId?: boolean, esUUID?:boolean}): PropertyDec
         const metadata = getMetadata(target.constructor);
         metadata.columnas = metadata.columnas || [];
         metadata.columnas.push(propertyKey.replace(/^_/, ""));
-
+        metadata.columnas.sort();
         if (params) {
             if(params.esId){
                 metadata.ids = metadata.ids || [];
                 metadata.ids.push(propertyKey);
             }
             if(params.esUUID){
-                metadata.uuid = metadata.uuid || [];
-                metadata.uuid.push(propertyKey);
+                metadata.uuid = metadata.uuid || "";
+                metadata.uuid = propertyKey;
             }
-            
         }
 
         Object.defineProperty(target, propertyKey, {
@@ -30,62 +29,55 @@ export function Column(params?: { esId?: boolean, esUUID?:boolean}): PropertyDec
             enumerable: true,
             configurable: true
         });
+
         Object.defineProperty(target, 'ids', {
             get: function() {
+                const valorUUID = this[metadata.uuid]
                 const valores = [];
-                for (const prop of metadata.columnas) {
-                    if (metadata.ids.includes(prop)) {
-                        const valor = this[prop];
-                        if (valor !== undefined && valor !== null) {
-                            valores.push(prop);
+                const uuid = metadata.uuid;
+                if(valorUUID===undefined){
+                    for (const prop of metadata.columnas) {
+                        if (metadata.ids.includes(prop)) {
+                            const valor = this[prop];
+                            if (valor !== undefined) {
+                                valores.push(prop);
+                            }
                         }
                     }
+                }else if(uuid!=="" && uuid!==undefined){
+                    valores.push(metadata.uuid);
                 }
                 return valores;
             },
             enumerable: false,
             configurable: true
         });
-        Object.defineProperty(target, 'idsParams', {
-            get: function() {
-                const valores = [];
-                for (const prop of metadata.columnas) {
-                    if (metadata.ids.includes(prop)) {
-                        const valor = this[prop];
-                        if (valor !== undefined && valor !== null) {
-                            valores.push(valor);
-                        }
-                    }
-                }
-                return valores;
-            },
-            enumerable: false,
-            configurable: true
-        });
+        
         Object.defineProperty(target, 'columnas',{
             get: function(){
-                return metadata.columnas
+                return metadata.columnas.sort();
             },
+            enumerable:false,
             configurable:true
-        })
+        });
+        
         Object.defineProperty(target, 'params', {
             get: function() {
                 const valores = [];
+                const uuid = metadata.uuid;
+                const ids = metadata.ids;
                 for (const prop of metadata.columnas) {
-                    if (!metadata.ids.includes(prop)) {
-                        const valor = this[prop];
-                        if (valor !== undefined && valor !== null) {
-                            valores.push(valor);
+                    const valor = this[prop];
+                    if(valor!==undefined && prop!==uuid){
+                        if(!ids.includes(prop)){
+                            valores.unshift(valor)
+                        }else{
+                            valores.push(valor)
                         }
                     }
                 }
-                for (const prop of metadata.columnas) {
-                    if (metadata.ids.includes(prop)) {
-                        const valor = this[prop];
-                        if (valor !== undefined && valor !== null) {
-                            valores.push(valor);
-                        }
-                    }
+                if((uuid!==undefined && uuid!=="") && this[uuid]!==undefined){
+                    valores.push(this[uuid])
                 }
                 return valores;
             },
@@ -93,8 +85,6 @@ export function Column(params?: { esId?: boolean, esUUID?:boolean}): PropertyDec
             configurable: true
         });
         
-        
-
         target.set = function(data: any) {
             const instanceMetadata = getMetadata(this.constructor);
             for (const prop in data) {

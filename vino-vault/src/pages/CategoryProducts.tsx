@@ -24,7 +24,7 @@ const CategoryProducts : React.FC = () => {
     useEffect(() => {
 
         const categorySlug = params.slug;
-        const tempCategory = products.filter(p => p.slug === categorySlug)[0];
+        const tempCategory = products.filter(p => p.slug === categorySlug)[1];
         console.log(categorySlug);
         
         if(tempCategory.products!==undefined){

@@ -19,3 +19,13 @@ export interface ProductCategory {
   cover?: string;
   products?: Product[];
 }
+
+export interface Producto {
+  id_producto?: string,
+  ean?:string,
+  nombre_producto?:string,
+  cantidad?:number,
+  descripcion?:string,
+  marca?:string,
+  precio?:number
+}

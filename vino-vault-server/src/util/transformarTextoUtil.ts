@@ -37,12 +37,3 @@ export function destransformarTexto(texto:string){
 function invertirPalabras(texto:string){
     return texto.trim().split('').reverse().join('');
 }
-
-// npx ts-node trasformarTextoUtil.ts
-
-
-const nombre = transformarTexto("David");
-
-console.log(`\nTRANSFORMAR\n-------------\n${nombre}.\n--------------------\n`);
-console.log(`DESTRANSFORMAR\n-------------\n${destransformarTexto(nombre)}.\n--------------------\n`)
-

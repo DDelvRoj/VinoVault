@@ -2,6 +2,13 @@ import { ProductStore } from "./ProductStore.ts";
 import { Product, ProductCategory } from "./types.ts";
 
 
+const fethData = async () =>{
+
+}
+
+const fetchProductos = async () =>{
+  
+}
 
 export const fetchData = async (): Promise<ProductCategory[]> => {
   const json = ["beds.json", "armchairs.json", "coffee_tables.json", "cushions.json", "floor_lamps.json", "office_chairs.json"];

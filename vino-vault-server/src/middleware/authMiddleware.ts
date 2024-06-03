@@ -10,14 +10,11 @@ export function authenticateToken(req: Request, res: Response, next: NextFunctio
     if (!token) {
       return res.status(401).json({ error: 'Token de autenticación requerido' });
     }
-  
     jwt.verify(token.split(' ')[1], SECRET_KEY || '', (err, decoded) => {
       if (err) {
         return res.status(403).json({ error: 'Token de autenticación inválido' });
       }
-  
       req['user'] = decoded; // Los datos del usuario decodificados se adjuntan a req.user
-      console.log(decoded);
       next();
     });
   }

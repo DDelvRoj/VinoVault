@@ -4,7 +4,6 @@ export function Entity(tabla: string,customCommands?:[any]): ClassDecorator {
     return function(target: any) {
         const tablaNombre = tabla;
 
-        // Posibilidad de
         if (customCommands) {
             const customCommandsMap:Map<string,string> = new Map<string, string>(customCommands);
             for (const [key, value] of customCommandsMap.entries()) {
@@ -16,7 +15,6 @@ export function Entity(tabla: string,customCommands?:[any]): ClassDecorator {
                 });
             }
         }
-
         // Métodos para construir consultas SQL aquí
         Object.defineProperty(target.prototype, 'findAll', {
             get: function(){
@@ -24,19 +22,22 @@ export function Entity(tabla: string,customCommands?:[any]): ClassDecorator {
             },
             configurable: true
         });
+
         Object.defineProperty(target.prototype, 'select', {
             get: function(){
                 const ids = this['ids'];
-                const where = ids.map(i=>`${i}=?`).filter(col=>col!=undefined ).join(' AND ');
+                const where = ids.map(i=>`${i}=?`).filter(col=>col!=undefined ).join(' AND ')
+                + (ids.length>=1 && (this['uuid']===""|| this['uuid'] === undefined)?' ALLOW FILTERING':"");
                 return `SELECT * FROM ${tablaNombre} WHERE ${where}`;
             },
             configurable: true
         });
+
         Object.defineProperty(target.prototype, 'delete', {
             get: function(){
-                const ids = this['ids'];
-                const where = ids.map(i=>`${i}=?`).filter(col=>col!=undefined ).join(' AND ');
-                
+                const metadata = getMetadata(this.constructor);
+                const uuid = metadata.uuid;
+                const where = `${uuid}=?`
                 return `DELETE FROM ${tablaNombre} WHERE ${where}`;
             },
             configurable: true
@@ -45,25 +46,23 @@ export function Entity(tabla: string,customCommands?:[any]): ClassDecorator {
         Object.defineProperty(target.prototype, 'insert', {
             get: function(){
                 const metadata = getMetadata(this.constructor);
+                const uuid = metadata.uuid;
+                const ids = metadata.ids;
                 const columnas = [];
                 for (const prop of metadata.columnas) {
                     const valor = this[prop];
-                    if (valor !== undefined && valor !== null) {
-                        columnas.push(prop);
+                    if(valor!==undefined && prop!==uuid){
+                        if(!ids.includes(prop)){
+                            columnas.unshift(prop);
+                        }else{
+                            columnas.push(prop)
+                        }
                     }
                 }
-                const ids = this['ids'];
-                const uuid = metadata.uuid || [];
-                
-                const notIds = columnas.map(col => {
-                    if(!ids.includes(col)){
-                        return col;
-                    }
-                }).filter(col=>col!=undefined);
-                const insert = `(${notIds.join(', ')}${ids!=undefined && ids!=null?', ':''}${ids.map(id => id).join(', ')}) VALUES (${notIds.map(()=>'?').join(', ')}${ids!=undefined && ids!=null?', ':''}${ids.map(i=>{
-                    if(!uuid.includes(i)) return '?';
-                    return 'uuid()';
-                }).join(', ')})`;
+                if(uuid!=="" && uuid!==undefined){
+                    columnas.push(uuid);
+                }
+                const insert = `(${columnas.join(', ')}) VALUES (${columnas.map(col=>(col!==uuid?'?':'uuid()')).join(', ')})`;
                 return `INSERT INTO ${tablaNombre} ${insert}`;
             },
             configurable: true
@@ -72,25 +71,24 @@ export function Entity(tabla: string,customCommands?:[any]): ClassDecorator {
         Object.defineProperty(target.prototype, 'update', {
             get: function(){
                 const metadata = getMetadata(this.constructor);
+                const uuid = metadata.uuid;
+                const ids = metadata.ids;
                 const columnas = [];
                 for (const prop of metadata.columnas) {
                     const valor = this[prop];
-                    if (valor !== undefined && valor !== null) {
-                        columnas.push(prop);
+                    if (valor !== undefined && prop !== uuid) {
+                        if(!ids.includes(prop)){
+                            columnas.unshift(prop);
+                        }else{
+                            columnas.push(prop)
+                        }
                     }
                 }
-                const ids = this['ids'];
-                const setValues = columnas.map(col => {
-                    if(!ids.includes(col)){
-                        return `${col}=?`
-                    }
-                }).filter(col=>col!=undefined ).join(', ');
-                const where = ids.map(i=>`${i}=?`).filter(col=>col!=undefined).join(' AND ');
-                
+                const setValues = columnas.map(col=>`${col}=?`).filter(col=>col!=undefined ).join(', ');
+                const where = `${uuid}=?`
                 return `UPDATE ${tablaNombre} SET ${setValues} WHERE ${where}`;
             },
             configurable: true
         });
-        
     };
 }
