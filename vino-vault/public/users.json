@@ -1,0 +1,64 @@
+{
+  "users": [
+    {
+      "name": "Juan",
+      "password": "1234",
+      "activated": true,
+      "registrationDate": "2023-01-01T12:00:00Z"
+    },
+    {
+      "name": "Ana",
+      "password": "abcd",
+      "activated": false,
+      "registrationDate": "2023-01-02T12:00:00Z"
+    },
+    {
+      "name": "Luis",
+      "password": "5678",
+      "activated": true,
+      "registrationDate": "2023-01-03T12:00:00Z"
+    },
+    {
+      "name": "Marta",
+      "password": "efgh",
+      "activated": false,
+      "registrationDate": "2023-01-04T12:00:00Z"
+    },
+    {
+      "name": "Carlos",
+      "password": "ijkl",
+      "activated": true,
+      "registrationDate": "2023-01-05T12:00:00Z"
+    },
+    {
+      "name": "Sofia",
+      "password": "mnop",
+      "activated": false,
+      "registrationDate": "2023-01-06T12:00:00Z"
+    },
+    {
+      "name": "David",
+      "password": "qrst",
+      "activated": true,
+      "registrationDate": "2023-01-07T12:00:00Z"
+    },
+    {
+      "name": "Lucia",
+      "password": "uvwx",
+      "activated": false,
+      "registrationDate": "2023-01-08T12:00:00Z"
+    },
+    {
+      "name": "Pedro",
+      "password": "yzab",
+      "activated": true,
+      "registrationDate": "2023-01-09T12:00:00Z"
+    },
+    {
+      "name": "Maria",
+      "password": "cdef",
+      "activated": false,
+      "registrationDate": "2023-01-10T12:00:00Z"
+    }
+  ]
+}

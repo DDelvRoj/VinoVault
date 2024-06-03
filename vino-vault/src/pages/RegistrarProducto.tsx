@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonInput, IonTextarea, IonList, IonItem, IonButton, IonLabel, IonIcon } from '@ionic/react';
 import { chevronBackOutline } from 'ionicons/icons';
-
+import { useHistory } from "react-router-dom";
 const RegistrarProducto: React.FC = () => {
+  const history = useHistory();
   const [product, setProduct] = useState({
     name: '',
     price: ''
+    
     // Otros campos del producto acá
   });
 
@@ -24,7 +26,7 @@ const RegistrarProducto: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           
-            <IonButton slot='start' routerLink='/' routerDirection='back'>
+            <IonButton slot='start' onClick={() => history.goBack()}>
               <IonIcon icon={ chevronBackOutline } />&nbsp;Regresar
             </IonButton>
             <IonTitle>Registrar Producto</IonTitle>

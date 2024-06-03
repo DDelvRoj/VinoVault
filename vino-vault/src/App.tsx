@@ -31,6 +31,8 @@ import FavouriteProducts from './pages/FavouriteProducts.tsx';
 import CartProducts from './pages/CartProducts.tsx';
 import RegistrarProducto from './pages/RegistrarProducto.tsx';
 import React from 'react';
+import UserSettings from './pages/UserSettings.tsx';
+import AddUser from './pages/AddUser.tsx';
 
 setupIonicReact({});
 
@@ -71,7 +73,19 @@ const App = () => {
 					<Route path="/registrar-producto" exact>
 						<RegistrarProducto />
 					</Route>
+
+					<Route path="/ajustes-usuario" exact>
+						<UserSettings />
+					</Route>
+
+					<Route path="/add-user" exact>
+						<AddUser />
+					</Route>
+			
 				</IonRouterOutlet>
+
+
+
 			</IonReactRouter>
 		</IonApp>
 	);
