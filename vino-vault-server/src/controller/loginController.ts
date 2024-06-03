@@ -1,40 +1,43 @@
 import { Router, Request, Response } from "express";
 import { visorSesion } from "../util/sesionUtil";
-import bcryptUtil from "../util/bcryptUtil";
 import { UsuarioService } from "../service/usuarioService";
 import { firmarToken } from "../util/tokenUtil";
-import { Credential } from "../type";
+import { Usuario as UsuarioInterface } from "../type";
+import { ConexionDataBase } from "../model/conexionBD";
+import { Usuario } from "../entity/usuario";
 
 const loginRouter = Router();
 
 loginRouter.post('/login', async (req: Request, res: Response) => {
-    const { username, password } = req.body;
-    const usuarioBuscador:UsuarioService = new UsuarioService(visorSesion);
+    const {username,password} = req.body;
+    console.log({username,password});
+    
+    const conexion:ConexionDataBase = new ConexionDataBase(visorSesion);
+    const usuarioBuscador:UsuarioService = new UsuarioService(conexion);
     try {
-      await usuarioBuscador.conectar();
-      const user = await usuarioBuscador.buscarUsuarioPorNombre(username);
-      if(!user){
+      await conexion.conectar();
+      const user = await usuarioBuscador.coindicenDatos(new Usuario({usuario:username, clave:password}));
+    
+      if(user===undefined ||user === null){
         return res.status(401).json({ error: 'Credenciales inválidas' });
       }
-      // Verificar la contraseña
-      const passwordMatch = await bcryptUtil.desencriptarYCompararPassword(password, user.password);
-      if (!passwordMatch) {
-        return res.status(401).json({ error: 'Credenciales inválidas' });
-      }
-
-      const credenciales:Credential = {
-        username: username,
-        password: user.password
-      }
+      
+      const resultado:UsuarioInterface = {
+        id_usuario: user.id_usuario.toString(),
+        usuario:user.usuario,
+        clave:password,
+        creado: user.creado
+      };
+      
 
       // Generar y enviar el token JWT
-      const token = firmarToken(credenciales);
+      const token = firmarToken(resultado);
       console.log("Inicio de sesión LOGIN éxitoso...");
       res.json({ token });
     } catch (err) {
       res.status(500).json({ error: 'Hubo un error al procesar tu solicitud' });
     }
-    usuarioBuscador.desconectar();
+    await conexion.desconectar();
   });
 
 export default loginRouter;

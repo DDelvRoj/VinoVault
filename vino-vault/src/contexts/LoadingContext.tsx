@@ -1,26 +1,39 @@
 import React, { useState, createContext, ReactNode } from 'react';
+import './LoadingContext.css'
 
 // Crear el contexto con un valor predeterminado
 export const LoadingContext = createContext({
-  isLoading: false,
-  setIsLoading: (value: boolean) => {},
+  estaCargando: false,
+  porciento: 0,
+  descripcion: '',
+  setEstaCargando: (estaCargando: boolean) => {},
+  setPorciento:  (porciento: number) =>{},
+  setDescripcion: (descripcion:string)=>{}
 });
 
 interface Props {
     children: ReactNode;
-    // Aquí van el resto de tus props
-  }
+}
 // Crear un proveedor de contexto
 export const LoadingProvider: React.FC<Props> = ({ children }) => {
-    const [isLoading, setIsLoading] = useState(false);
-  
+    const [estaCargando, setEstaCargando] = useState(false);
+    const [porciento, setPorciento] = useState(0);
+    const [descripcion, setDescripcion] = useState('');
     return (
-      <LoadingContext.Provider value={{ isLoading, setIsLoading }}>
-        {isLoading ? (
-        <div className="loading">
-            {/* Aquí puedes añadir cualquier elemento que quieras mostrar cuando isLoading es true */}
-            <p>Cargando...</p>
+      <LoadingContext.Provider value={{ estaCargando,porciento,descripcion,setPorciento, setEstaCargando, setDescripcion }}>
+        {estaCargando ? (
+        <div>
+          <div className="ring text-loader">
+            Cargando
+            <span></span>
+          </div>
+          <div className='bottom-div text-loader'>
+            {descripcion}
+            <br />
+            {porciento}%
+          </div>
         </div>
+        
         ) : (
             children
         )}

@@ -8,6 +8,6 @@ export async function traducir(texto:string) {
         return text;
     } catch (error) {
         console.error("No se pudo traducir ",error);
-        return '';
+        return texto;
     }
 }

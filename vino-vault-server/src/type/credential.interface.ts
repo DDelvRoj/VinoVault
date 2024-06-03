@@ -1,4 +1,5 @@
 export interface Credential {
-    username: string,
-    password: string
+    uuid?:string,
+    username?: string,
+    password?: string
 }

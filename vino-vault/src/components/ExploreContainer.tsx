@@ -8,14 +8,20 @@ interface ContainerProps {
 }
 
 const ExploreContainer: React.FC<ContainerProps> = ({ name }) => {
-  const {setIsLoading} = useContext(LoadingContext);
-
+  const {setEstaCargando, setPorciento} = useContext(LoadingContext);
 
   const loadData = async () => {
-    setIsLoading(true);
+    let porcentaje = 0
+    setEstaCargando(true);
+    let interval = setInterval(()=>{
+      porcentaje+=1;
+      setPorciento(porcentaje);
+    },30);
     setTimeout(()=>{
-      setIsLoading(false);
+      clearInterval(interval);
+      setEstaCargando(false);
     },3000);
+
     
   };
 
