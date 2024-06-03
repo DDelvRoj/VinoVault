@@ -4,6 +4,7 @@ import { ConexionDataBase } from "../model/conexionBD";
 import { QueryExecuterModel } from "../model/queryExecuterModel";
 import bcryptUtil from "../util/bcryptUtil";
 import { transformarTexto } from "../util/transformarTextoUtil";
+import { manejarErrores } from '../decorator';
 
 export class UsuarioService {
     
@@ -13,63 +14,44 @@ export class UsuarioService {
         this.queryExecuter = new QueryExecuterModel(conexion);
     }
 
+    @manejarErrores
     async listarUsuario(){
-        try {
-            const usuarios:UsuarioInterface[] = (await this.queryExecuter.listar(new Usuario())).map(valor=>{
-                return valor as UsuarioInterface;
-            });
-            return usuarios;
-        } catch (error) {
-            throw error;
-        }
+        const usuarios:UsuarioInterface[] = (await this.queryExecuter.listar(new Usuario())).map(valor=>{
+            return valor as UsuarioInterface;
+        });
+        return usuarios;
     }
 
+    @manejarErrores
     async buscarUsuario (usuario:Usuario)  {
-        try {
-            const usuarioValor:Usuario = new Usuario(await this.queryExecuter.buscar(usuario) as UsuarioInterface)
-            return usuarioValor;
-        } catch (error) {
-            throw error;
-        }
+        const usuarioValor:Usuario = new Usuario(await this.queryExecuter.buscar(usuario) as UsuarioInterface)
+        return usuarioValor;
     }
     
+    @manejarErrores
     async coindicenDatos (usuario:Usuario)  {
-        try {
-            
-            const resultado:UsuarioInterface = await this.buscarUsuario(usuario);
-
-            if(resultado!=undefined && resultado !=null){
-                const usuarioValidacion = await bcryptUtil.desencriptarYCompararData(transformarTexto(usuario.usuario), resultado.nombre);
-                const claveValidacion = await bcryptUtil.desencriptarYCompararData(transformarTexto(usuario.clave), resultado.clave); 
-                if(usuarioValidacion && claveValidacion) return resultado;
-            }
-            return undefined;
-        } catch (error) {
-            throw error;
+        const resultado:UsuarioInterface = await this.buscarUsuario(usuario);
+        if(resultado!=undefined && resultado !=null){
+            const usuarioValidacion = await bcryptUtil.desencriptarYCompararData(transformarTexto(usuario.usuario), resultado.nombre);
+            const claveValidacion = await bcryptUtil.desencriptarYCompararData(transformarTexto(usuario.clave), resultado.clave); 
+            if(usuarioValidacion && claveValidacion) return resultado;
         }
+        return undefined;
     }
+
+    @manejarErrores
     async insertarUsuario(usuarioNuevo:Usuario) {
-        try {
-            await this.queryExecuter.insertar(usuarioNuevo);
-        } catch (error) {
-            throw error;
-        }
+        await this.queryExecuter.insertar(usuarioNuevo);
     }
 
+    @manejarErrores
     async modificarUsuario(usuarioMod:Usuario){
-        try {
-            await this.queryExecuter.modificar(usuarioMod);
-        } catch (error) {
-            throw error;
-        }
+        await this.queryExecuter.modificar(usuarioMod);
     }
 
+    @manejarErrores
     async crearUsuario(usuario:Usuario){
-        try {
-            await this.queryExecuter.comandosCustoms(usuario,'validar');
-        } catch (error) {
-            throw error;
-        }
+        await this.queryExecuter.comandosCustoms(usuario,'validar',transformarTexto);
     }
 }
 

@@ -1,3 +1,4 @@
+import { manejarErrores } from '../decorator';
 import { Producto } from '../entity/producto';
 import { ConexionDataBase } from '../model/conexionBD';
 import { QueryExecuterModel } from '../model/queryExecuterModel';
@@ -9,35 +10,24 @@ export class ProductoService {
         this.queryExecuter = new QueryExecuterModel(conexion);
     }
 
+    @manejarErrores
     async listarProductos(){
-        try {
-            return await this.queryExecuter.listar(new Producto())
-        } catch (error) {
-            throw error;
-        }
+        return await this.queryExecuter.listar(new Producto());
     }
+
+    @manejarErrores
     async buscarProducto(item:Producto){
-        try {
-            return await this.queryExecuter.buscar(item);
-        } catch (error) {
-            throw error;   
-        }
+        return await this.queryExecuter.buscar(item);
     }
 
+    @manejarErrores
     async crearProducto(item:Producto){
-        try {
-            await this.queryExecuter.insertar(item);
-        } catch (error) {
-            throw error;
-        }
+        await this.queryExecuter.insertar(item);
     }
 
+    @manejarErrores
     async modificarProducto(modificar:Producto){
-        try {
-            await this.queryExecuter.modificar(modificar);
-        } catch (error) {
-            throw error;
-        }
+        await this.queryExecuter.modificar(modificar);
     }
 
 }
