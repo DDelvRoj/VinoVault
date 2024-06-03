@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import loginRouter from './controller/loginController';
-import registroRouter from './controller/registroController';
 import productosRouter from './controller/productosController';
 import personasRouter from './controller/personasController';
 
@@ -13,7 +12,6 @@ app.use(express.json());
 
 app.use(loginRouter);
 app.use(personasRouter)
-app.use(registroRouter);
 app.use(productosRouter);
 
 // Iniciar el servidor

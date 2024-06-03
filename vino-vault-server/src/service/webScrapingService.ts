@@ -3,16 +3,17 @@ import fetch from 'node-fetch';
 import { traducir } from "../util/traductorUtil";
 import { ProductoTemp } from "../type";
 
+const browser = puppeteer.launch({
+    headless:false,
+    'args' : [
+        '--no-sandbox',
+        '--disable-setuid-sandbox'
+    ]
+});
+
 async function buscarCodigoDeBarra (codigo:string){
     try {
-        const browser = await puppeteer.launch({
-            headless:true,
-            'args' : [
-                '--no-sandbox',
-                '--disable-setuid-sandbox'
-            ]
-        });
-        const page:Page = (await browser.pages())[0];
+        const page:Page = await (await browser).newPage();
         await page.setCacheEnabled(false);
         const link = `https://go-upc.com/search?q=${codigo}`;
         console.log(link);
@@ -71,7 +72,7 @@ async function buscarCodigoDeBarra (codigo:string){
         for (let cookie of cookies) {
         await page.deleteCookie(cookie);
         }
-        await browser.close();
+        await page.close();
         return producto;
     } catch (error) {
         throw error;

@@ -29,9 +29,10 @@ import CategoryProducts from './pages/CategoryProducts.tsx';
 import Product from './pages/Product.tsx';
 import FavouriteProducts from './pages/FavouriteProducts.tsx';
 import CartProducts from './pages/CartProducts.tsx';
-import RegistrarProducto from './pages/RegistrarProducto.tsx';
 import UserSettings from './pages/UserSettings.tsx';
 import AddUser from './pages/AddUser.tsx';
+import RegistrarProducto from './pages/RegistrarProducto.tsx';
+
 
 setupIonicReact({});
 
@@ -40,6 +41,8 @@ const App = () => {
 	useEffect(() => {
 
 		fetchData();
+		console.log("Me corroooo");
+		
 	}, []);
 
 	return (
