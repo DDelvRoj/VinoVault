@@ -1,6 +1,8 @@
-import { IonButton, IonContent, IonHeader, IonInput, IonItem, IonList, IonPage, IonToolbar, IonTitle } from "@ionic/react";
+import { IonButton, IonContent, IonHeader, IonInput, IonItem, IonList, IonPage, IonToolbar, IonTitle, IonButtons, IonIcon } from "@ionic/react";
+import { chevronBackOutline } from "ionicons/icons";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
+import './AddUser.css';
 
 const AddUser: React.FC = () => {
     const [userName, setUserName] = useState("");
@@ -43,12 +45,13 @@ const AddUser: React.FC = () => {
     };
 
     return (
-        <IonPage>
+        <IonPage className="simplePage">
             <IonHeader>
                 <IonToolbar>
-                <IonButton slot="end" onClick={() => history.goBack()}>Regresar</IonButton>
+                    <IonButtons>
+                        <IonButton slot="start" onClick={() => history.goBack()}> <IonIcon color="dark" icon={ chevronBackOutline } />&nbsp;Regresar</IonButton>
+                    </IonButtons>
                     <IonTitle>Añadir Nuevo Usuario</IonTitle>
-                    <IonButton slot="star" onClick={() => history.goBack()}>Regresar</IonButton>
                 </IonToolbar>
             </IonHeader>
             <IonContent>
