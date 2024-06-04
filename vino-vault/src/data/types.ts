@@ -1,9 +1,3 @@
-
-export interface ConjuntoProducto{
-
-    category: ProductCategory, 
-    product: Product
-}
 export interface Product {
   id?: number;
   image?: string;
@@ -28,4 +22,18 @@ export interface Producto {
   descripcion?:string,
   marca?:string,
   precio?:number
+}
+
+export interface ProductStoreState {
+  products: ProductCategory[];
+}
+
+export interface FavouritesStoreState {
+  total: number;
+  product_ids: string[];
+}
+
+export interface CartStoreState {
+  total: number;
+  product_ids: string[];
 }
