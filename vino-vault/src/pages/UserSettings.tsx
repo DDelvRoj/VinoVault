@@ -1,4 +1,5 @@
-import { IonButton, IonContent, IonHeader, IonPage, IonToolbar, IonTitle, IonList, IonItem, IonLabel, IonGrid, IonRow, IonCol, IonToggle } from "@ionic/react";
+import { IonButton, IonContent, IonHeader, IonPage, IonToolbar, IonTitle, IonList, IonItem, IonLabel, IonGrid, IonRow, IonCol, IonToggle, IonButtons, IonIcon } from "@ionic/react";
+import { chevronBackOutline } from "ionicons/icons";
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 
@@ -45,8 +46,11 @@ const UserSettings: React.FC = () => {
         <IonPage>
             <IonHeader>
                 <IonToolbar>
+                    <IonButtons>
+                        <IonButton slot="start" routerLink="/" routerDirection="back"><IonIcon color="dark" icon={ chevronBackOutline } />&nbsp;Regresar</IonButton>
+                    </IonButtons>
                     <IonTitle>Ajustes de Usuario</IonTitle>
-                    <IonButton slot="end" onClick={() => history.goBack()}>Regresar</IonButton>
+                    
                 </IonToolbar>
             </IonHeader>
             <IonContent>
