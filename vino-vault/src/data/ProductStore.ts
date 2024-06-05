@@ -1,4 +1,5 @@
 import { Store } from "pullstate";
+import { ProductStoreState } from "./types";
 
 interface Product {
   id: number;
@@ -7,7 +8,9 @@ interface Product {
   name: string;
   // Otros campos que pueda tener un producto
 }
-
+interface RealProductsStoreState{
+  products:Product[]
+}
 interface ProductCategory {
   name: string;
   slug: string;
@@ -15,10 +18,10 @@ interface ProductCategory {
   products: Product[];
 }
 
-interface ProductStoreState {
-  products: ProductCategory[];
-}
 
+export const RealProductStore = new Store<RealProductsStoreState>({
+  products:[]
+});
 export const ProductStore = new Store<ProductStoreState>({
   products: []
 });

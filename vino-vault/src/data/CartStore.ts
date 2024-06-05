@@ -1,18 +1,16 @@
 import { Store } from "pullstate";
+import { CartStoreState } from "./types";
 
-interface CartStoreState {
-  total: number;
-  product_ids: string[];
-}
+
 
 export const CartStore = new Store<CartStoreState>({
   total: 0,
   product_ids: []
 });
 
-export const addToCart = (categorySlug: string, productID: number): void => {
+export const addToCart = ( productID: number): void => {
   CartStore.update(s => {
-    s.product_ids = [...s.product_ids, `${categorySlug}/${productID}`];
+    s.product_ids = [...s.product_ids, `${productID}`];
   });
 }
 
