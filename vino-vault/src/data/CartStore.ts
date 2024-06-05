@@ -1,7 +1,9 @@
 import { Store } from "pullstate";
-import { CartStoreState } from "./types";
 
-
+interface CartStoreState {
+  total: number;
+  product_ids: string[];
+}
 
 export const CartStore = new Store<CartStoreState>({
   total: 0,

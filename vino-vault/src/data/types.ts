@@ -23,17 +23,3 @@ export interface Producto {
   marca?:string,
   precio?:number
 }
-
-export interface ProductStoreState {
-  products: ProductCategory[];
-}
-
-export interface FavouritesStoreState {
-  total: number;
-  product_ids: string[];
-}
-
-export interface CartStoreState {
-  total: number;
-  product_ids: string[];
-}

@@ -1,12 +1,15 @@
 import { Store } from "pullstate";
-import { FavouritesStoreState } from "./types";
 
-
+interface FavouritesStoreState {
+  total: number;
+  product_ids: string[];
+}
 
 export const FavouritesStore = new Store<FavouritesStoreState>({
   total: 0,
   product_ids: []
 });
+
 
 export const addToFavourites = (productID: number): void => {
   FavouritesStore.update(s => {
