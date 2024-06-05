@@ -1,38 +1,10 @@
-import { ProductStore } from "./ProductStore.ts";
-import { Product, ProductCategory } from "./types.ts";
+import { RealProductStore } from "./ProductStore.ts";
+import { Product } from "./types.ts";
 
 
-const fethData = async () =>{
-
-}
-
-const fetchProductos = async () =>{
-  
-}
-
-export const fetchData = async (): Promise<ProductCategory[]> => {
-  const json = ["beds.json", "armchairs.json", "coffee_tables.json", "cushions.json", "floor_lamps.json", "office_chairs.json"];
-
-  let products: ProductCategory[] = [];
-
-  for (const category of json) {
-    const categoryProducts = await fetchProducts(category);
-
-    let categoryName = category.replace(".json", "").replace("_", " ");
-    categoryName = uppercaseWords(categoryName);
-
-    const productCategory: any = {
-      name: categoryName,
-      slug: category.replace(".json", ""),
-      cover: categoryProducts[6]?.image || "", // Agrega una verificación de existencia
-      products: categoryProducts
-    };
-
-    products = [...products, productCategory];
-    ProductStore.update(s => { s.products = [...s.products, productCategory]; });
-  }
-
-  return products;
+export const realFetchData = async () =>{
+  const products:any = await fetchProducts('armchairs.json');
+  RealProductStore.update(s=>{s.products =  [...products]});
 }
 
 const fetchProducts = async (category: string): Promise<Product[]> => {
@@ -45,11 +17,4 @@ const fetchProducts = async (category: string): Promise<Product[]> => {
   });
 
   return data;
-}
-
-const uppercaseWords = (words: string): string => {
-  return words.toLowerCase()
-    .split(' ')
-    .map(s => s.charAt(0).toUpperCase() + s.substring(1))
-    .join(' ');
 }
