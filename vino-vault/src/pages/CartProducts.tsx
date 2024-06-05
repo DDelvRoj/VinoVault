@@ -2,7 +2,7 @@ import { IonAvatar, IonBadge, IonButton, IonButtons, IonCardSubtitle, IonCol, Io
 import { cart, checkmarkSharp, chevronBackOutline, trashOutline } from "ionicons/icons";
 import { useEffect, useRef, useState } from "react";
 import { CartStore, removeFromCart } from "../data/CartStore.ts";
-import { RealProductStore } from "../data/ProductStore.ts";
+import { ProductStore } from "../data/ProductStore.ts";
 
 import  "./CartProducts.css";
 import { Product } from "../data/types.ts";
@@ -11,7 +11,7 @@ import React from "react";
 const CartProducts : React.FC = () => {
 
     const cartRef = useRef<HTMLIonIconElement>(null);
-    const products = RealProductStore.useState(s => s.products);
+    const products = ProductStore.useState(s => s.products);
     const shopCart = CartStore.useState(s => s.product_ids);
     const [ cartProducts, setCartProducts ] = useState<Product[]>([]);
     const [total, setTotal] = useState(0);

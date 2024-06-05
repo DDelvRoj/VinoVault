@@ -1,10 +1,10 @@
-import { RealProductStore } from "./ProductStore.ts";
+import { ProductStore } from "./ProductStore.ts";
 import { Product } from "./types.ts";
 
 
-export const realFetchData = async () =>{
+export const fetchData = async () =>{
   const products:any = await fetchProducts('armchairs.json');
-  RealProductStore.update(s=>{s.products =  [...products]});
+  ProductStore.update(s=>{s.products =  [...products]});
 }
 
 const fetchProducts = async (category: string): Promise<Product[]> => {

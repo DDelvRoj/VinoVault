@@ -22,7 +22,7 @@ import '@ionic/react/css/display.css';
 /* Theme variables */
 import './theme/variables.css';
 import { useEffect } from 'react';
-import { realFetchData } from './data/fetcher.ts';
+import { fetchData } from './data/fetcher.ts';
 import Home from './pages/Home.tsx';
 import Product from './pages/Product.tsx';
 import FavouriteProducts from './pages/FavouriteProducts.tsx';
@@ -38,9 +38,7 @@ const App = () => {
 
 	useEffect(() => {
 
-		realFetchData();
-		//fetchData();
-		
+		fetchData();
 		
 	}, []);
 

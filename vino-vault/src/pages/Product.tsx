@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import ProductCard from "../components/ProductCard.tsx";
 import { addToCart, CartStore } from "../data/CartStore.ts";
 import { addToFavourites, FavouritesStore } from "../data/FavouritesStore.ts";
-import {  RealProductStore } from "../data/ProductStore.ts";
+import {  ProductStore } from "../data/ProductStore.ts";
 
 
 import "./Product.css";
@@ -16,7 +16,7 @@ const Product : React.FC = () => {
 
     const params= useParams() as any;
     const cartRef = useRef<HTMLIonIconElement>(null);
-    const products = RealProductStore.useState(s => s.products);
+    const products = ProductStore.useState(s => s.products);
     const favourites = FavouritesStore.useState(s => s.product_ids);
     const [ isFavourite, setIsFavourite ] = useState(false);
     const shopCart = CartStore.useState(s => s.product_ids);
