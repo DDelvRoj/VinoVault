@@ -2,51 +2,37 @@ import { IonAvatar, IonBadge, IonButton, IonButtons, IonCardSubtitle, IonCol, Io
 import { cart, checkmarkSharp, chevronBackOutline, trashOutline } from "ionicons/icons";
 import { useEffect, useRef, useState } from "react";
 import { CartStore, removeFromCart } from "../data/CartStore.ts";
-import { ProductStore } from "../data/ProductStore.ts";
+import { RealProductStore } from "../data/ProductStore.ts";
 
 import  "./CartProducts.css";
-import { ConjuntoProducto } from "../data/types.ts";
+import { Product } from "../data/types.ts";
 import React from "react";
 
 const CartProducts : React.FC = () => {
 
     const cartRef = useRef<HTMLIonIconElement>(null);
-    const products = ProductStore.useState(s => s.products);
+    const products = RealProductStore.useState(s => s.products);
     const shopCart = CartStore.useState(s => s.product_ids);
-    const [ cartProducts, setCartProducts ] = useState<ConjuntoProducto[]>([]);
-    
+    const [ cartProducts, setCartProducts ] = useState<Product[]>([]);
+    const [total, setTotal] = useState(0);
 
-    const [ total, setTotal ] = useState(0);
-
-    useEffect(() => {
-
-        const getCartProducts = () => {
-
-            setCartProducts([]);
-            setTotal(0);
-
-            shopCart.forEach(product => {
-
-                var favouriteParts = product.split("/");
-                var categorySlug = favouriteParts[0];
-                var productID = favouriteParts[1];
-                
-                const tempCategory = products.filter(p => p.slug === categorySlug)[0];
-                const tempProduct = tempCategory.products.filter(p => p.id=== parseInt(productID))[0];
-
-                const tempCartProduct:ConjuntoProducto = {
-
-                    category: tempCategory,
-                    product: tempProduct
-                };
-
-                setTotal(prevTotal => prevTotal + parseInt(tempProduct.price.replace("£", "")));
-                setCartProducts(prevSearchResults => [ ...prevSearchResults, tempCartProduct ]);
-            });
+    useEffect(()=>{
+        
+        
+        const getCarroProductos = ()=>{
+            const productosCarrito = products.map(p=>{
+                if(p != undefined && shopCart.includes(p.id.toString())){
+                    return p;
+                }
+                return null;
+            }).filter(p=>p!=null);
+            let suma = 0;
+            productosCarrito.forEach(p=>suma+=parseFloat(p.price.replace('£','')))
+            setCartProducts(productosCarrito);
+            setTotal(suma);
         }
-
-        getCartProducts();
-    }, [ shopCart,products ]);
+        getCarroProductos();
+    },[shopCart])
 
 
     const removeProductFromCart = async (index: number) => {
@@ -61,19 +47,10 @@ const CartProducts : React.FC = () => {
 				<IonToolbar>
                     <IonButtons slot="start">
                         <IonButton color="dark" routerLink="/" routerDirection="back">
-                            <IonIcon color="dark" icon={ chevronBackOutline } />&nbsp;Categorias
+                            <IonIcon color="dark" icon={ chevronBackOutline } />&nbsp;Ver Productos
                         </IonButton>
                     </IonButtons>
 					<IonTitle>Carrito</IonTitle>
-
-                    <IonButtons slot="end">
-                        <IonBadge color="dark">
-                            { shopCart.length }
-                        </IonBadge>
-						<IonButton color="dark">
-							<IonIcon ref={ cartRef } className="animate__animated" icon={ cart } />
-						</IonButton>
-					</IonButtons>
 				</IonToolbar>
 			</IonHeader>
 			
@@ -81,7 +58,7 @@ const CartProducts : React.FC = () => {
 
                     <IonRow className="ion-text-center ion-margin-top">
                         <IonCol size="12">
-                            <IonNote>{ cartProducts && cartProducts.length } { (cartProducts.length > 1 || cartProducts.length === 0) ? " products" : " product" } found</IonNote>
+                            <IonNote>{ cartProducts && cartProducts.length } { (cartProducts.length > 1 || cartProducts.length === 0) ? " productos encontrados." : " producto encontrado." }</IonNote>
                         </IonCol>
                     </IonRow>
 
@@ -90,19 +67,18 @@ const CartProducts : React.FC = () => {
 
                             if ((index <= 6)) {
                                 return (
-                                <IonItemSliding className="cartSlider">
-                                    <IonItem key={ index } lines="none" detail={ false } className="cartItem ">
+                                <IonItemSliding key={ index } className="cartSlider">
+                                    <IonItem  lines="none" detail={ false } className="cartItem ">
 
                                         <IonAvatar>
-                                            <IonImg src={ product.product.image } />
+                                            <IonImg src={ product.image } />
                                         </IonAvatar>
                                         <IonLabel className="ion-padding-start ion-text-wrap">
-                                            <p>{ product.category.name }</p>
-                                            <h4>{ product.product.name }</h4>
+                                            <h4>{ product.name }</h4>
                                         </IonLabel>
 
                                         <div className="cartActions">
-                                            <IonBadge color="dark">{ product.product.price }</IonBadge>
+                                            <IonBadge color="dark">{ product.price }</IonBadge>
                                         </div>
                                     </IonItem>
 
@@ -124,7 +100,7 @@ const CartProducts : React.FC = () => {
                     <IonCardSubtitle>£{ total.toFixed(2) }</IonCardSubtitle>
 
                     <IonButton color="dark">
-                        <IonIcon icon={ checkmarkSharp } />&nbsp;Checkout
+                        <IonIcon icon={ checkmarkSharp } />&nbsp;Aceptar y vender
                     </IonButton>
                 </div>
             </IonFooter>

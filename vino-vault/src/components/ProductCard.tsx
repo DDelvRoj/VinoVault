@@ -9,7 +9,6 @@ import React from "react";
 
 interface ProductCardProps{
     product: any; 
-    category?: any; 
     index?: any; 
     cartRef?: any
 }
@@ -17,7 +16,7 @@ interface ProductCardProps{
 
 const ProductCard : React.FC<ProductCardProps> = (props) => {
 
-    const { product, category, index, cartRef } = props;
+    const { product, index, cartRef } = props;
     const favourites = FavouritesStore.useState(s => s.product_ids);
 
     const productCartRef = useRef<HTMLIonIconElement>(null);
@@ -25,49 +24,48 @@ const ProductCard : React.FC<ProductCardProps> = (props) => {
     const [ isFavourite, setIsFavourite ] = useState(false);
 
     useEffect(() => {
-
-        const tempIsFavourite = favourites.find(f => f === `${ category.slug }/${ product.id }`);
+        const tempIsFavourite = favourites.find(f => f === `${ product.id }`);
         setIsFavourite(tempIsFavourite ? true : false);
     }, [props.product, favourites]);
 
-    const addProductToFavourites = (e:any, categorySlug: any, productID: any) => {
+    const addProductToFavourites = (e:any, productID: any) => {
 
         e.preventDefault();
         e.stopPropagation();
-        addToFavourites(categorySlug, productID);
+        addToFavourites(productID);
 
 
         if(productFavouriteRef.current){
             productFavouriteRef.current.style.display = "";
-            productFavouriteRef.current.classList.add("animate__fadeOutTopRight");
+            //productFavouriteRef.current.classList.add("animate__fadeOutTopRight");
         }
 
         setTimeout(() => {
             if (productFavouriteRef.current) {
-               productFavouriteRef.current.classList.remove("animate__fadeOutTopRight");
+               //productFavouriteRef.current.classList.remove("animate__fadeOutTopRight");
                 productFavouriteRef.current.style.display = "none";
             }
         }, 500);
     }
 
-    const addProductToCart = (e: MouseEvent<HTMLIonButtonElement, globalThis.MouseEvent>, categorySlug: any, productID: any) => {
+    const addProductToCart = (e: MouseEvent<HTMLIonButtonElement, globalThis.MouseEvent>, productID: any) => {
 
         e.preventDefault();
         e.stopPropagation();
-
+        addToCart(productID);
         if(productCartRef.current){
             productCartRef.current.style.display = "";
-            productCartRef.current.classList.add("animate__fadeOutUp");
+            //productCartRef.current.classList.add("animate__fadeOutUp");
         }
 
         setTimeout(() => {
 
-            cartRef.current.classList.add("animate__tada");
-            addToCart(categorySlug, productID);
+            //cartRef.current.classList.add("animate__bounce");
+            
 
             setTimeout(() => {
                 
-                cartRef.current.classList.remove("animate__tada");
+               // cartRef.current.classList.remove("animate__tada");
                 if(productCartRef.current){
                     productCartRef.current.style.display = "none";
                 }
@@ -77,11 +75,11 @@ const ProductCard : React.FC<ProductCardProps> = (props) => {
 
     return (
 
-        <IonCol size="6" key={`category_product_list_${index}`}>
-            <IonCard routerLink={`/category/${category.slug}/${product.id}`} className="categoryCard">
+        <IonCol size="6" key={`producto_lista_${index}`}>
+            <IonCard routerLink={`/producto/${product.id}`} className="categoryCard">
                 <IonCardHeader className="productCardHeader">
                     <div className="productCardActions">
-                        <IonIcon className="productCardAction" color={isFavourite ? "danger" : "medium"} icon={isFavourite ? heart : heartOutline} onClick={(e) => addProductToFavourites(e,category.slug, product.id)}/>
+                        <IonIcon className="productCardAction" color={isFavourite ? "danger" : "medium"} icon={isFavourite ? heart : heartOutline} onClick={(e) => addProductToFavourites(e, product.id)}/>
                         <IonIcon ref={ productFavouriteRef } style={{ position: "absolute", display: "none" }} className="productCardAction animate__animated " color="danger" icon={ heart } />
                         <IonIcon className="productCardAction" size="medium" icon={arrowRedoOutline} />
                     </div>
@@ -95,8 +93,8 @@ const ProductCard : React.FC<ProductCardProps> = (props) => {
                         <IonButton style={{ width: "100%" }} color="light" >
                             { product.price }
                         </IonButton>
-                        <IonButton color="dark" onClick={e => addProductToCart(e, category.slug, product.id)} >
-                            <IonIcon icon={cartOutline}  />
+                        <IonButton color="dark" onClick={e => addProductToCart(e, product.id)} >
+                            <IonIcon ref={cartRef} icon={cartOutline}  />
                         </IonButton>
 
                         <IonIcon ref={productCartRef} icon={ cart } color="dark" style={{ position: "absolute", display: "none", fontSize: "3rem" }} className="animate__animated" />

@@ -3,8 +3,6 @@ import { IonApp, IonRouterOutlet } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { setupIonicReact } from '@ionic/react';
 
-import Home from './pages/Home.tsx';
-
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
 
@@ -24,8 +22,8 @@ import '@ionic/react/css/display.css';
 /* Theme variables */
 import './theme/variables.css';
 import { useEffect } from 'react';
-import { fetchData } from './data/fetcher.ts';
-import CategoryProducts from './pages/CategoryProducts.tsx';
+import { realFetchData } from './data/fetcher.ts';
+import Home from './pages/Home.tsx';
 import Product from './pages/Product.tsx';
 import FavouriteProducts from './pages/FavouriteProducts.tsx';
 import CartProducts from './pages/CartProducts.tsx';
@@ -40,8 +38,9 @@ const App = () => {
 
 	useEffect(() => {
 
-		fetchData();
-		console.log("Me corroooo");
+		realFetchData();
+		//fetchData();
+		
 		
 	}, []);
 
@@ -64,11 +63,7 @@ const App = () => {
 						<CartProducts />
 					</Route>
 
-					<Route path="/category/:slug" exact>
-						<CategoryProducts />
-					</Route>
-
-					<Route path="/category/:slug/:id" exact>
+					<Route path="/producto/:id" exact>
 						<Product />
 					</Route>
 
