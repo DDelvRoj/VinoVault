@@ -30,7 +30,8 @@ export class UsuarioService {
     
     @manejarErrores
     async coindicenDatos (usuario:Usuario)  {
-        const resultado:UsuarioInterface = await this.buscarUsuario(usuario);
+        const usuarioBusqueda:Usuario = new Usuario({usuario:usuario.usuario});
+        const resultado:UsuarioInterface = await this.buscarUsuario(usuarioBusqueda);
         if(resultado!=undefined && resultado !=null){
             const usuarioValidacion = await bcryptUtil.desencriptarYCompararData(transformarTexto(usuario.usuario), resultado.nombre);
             const claveValidacion = await bcryptUtil.desencriptarYCompararData(transformarTexto(usuario.clave), resultado.clave); 
