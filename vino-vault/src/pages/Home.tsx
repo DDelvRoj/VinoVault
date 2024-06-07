@@ -10,6 +10,7 @@ import "./Home.css";
 import { Product } from "../data/types.ts";
 import React from "react";
 import { FavouritesStore } from "../data/FavouritesStore.ts";
+import { fetchData } from "../data/fetcher.ts";
 
 const Home : React.FC = () => {
 
@@ -20,11 +21,19 @@ const Home : React.FC = () => {
     const [ searchResults, setsearchResults ] = useState<Product[]>([]);
     const [ amountLoaded, setAmountLoaded ] = useState(6);
 
+
+    useEffect(()=>{
+        fetchData();
+    }, []);
+
+    useEffect(()=>{
+        if(searchResults.length===0){
+            setsearchResults(products);
+        }
+    },[products, searchResults]);
+
     useEffect(() => {
-        
-        
         if(amountLoaded>=0){
-            
             const productosTop = products?.map((p,i)=>{
                 if(i<=amountLoaded){
                     return p;
@@ -36,21 +45,18 @@ const Home : React.FC = () => {
     }, [amountLoaded]);
 
     const fetchMore = async (e:any) => {
-
-		//	Increment the amount loaded by 6 for the next iteration
 		setAmountLoaded(prevAmount => (prevAmount + 6));
 		e.target.complete();
 	}
 
     const search = async (e:React.KeyboardEvent<HTMLIonSearchbarElement>) => {
-
         const searchVal = e.currentTarget.value;
-
-        if (searchVal !== "") {
-         
+        if (searchVal !='' && searchVal && searchVal!=undefined) {
             const tempResults :Product[]|undefined= products?.filter(p => p.name?.toLowerCase().includes((searchVal?searchVal.toLowerCase():'')));
             if (tempResults!==undefined){
                 setsearchResults(tempResults);
+            } else {
+                setsearchResults(products);
             }
         }
     }
@@ -60,9 +66,7 @@ const Home : React.FC = () => {
         <IonPage id="category-page" className="categoryPage">
             <IonHeader>
 				<IonToolbar>
-                    
 					<IonTitle>Productos</IonTitle>
-                    
                     <IonButtons slot="end">
 						<IonBadge color="danger">
                             { favoritos.length }
@@ -70,7 +74,6 @@ const Home : React.FC = () => {
 						<IonButton color="danger" routerLink="/favourites">
 							<IonIcon icon={ heart } />
 						</IonButton>
-
 						<IonBadge color="dark">
                             { shopCart.length }
                         </IonBadge>
@@ -80,22 +83,17 @@ const Home : React.FC = () => {
 					</IonButtons>
 				</IonToolbar>
 			</IonHeader>
-			
 			<IonContent fullscreen>
 
                 <IonSearchbar className="search" onKeyUp={ search } placeholder="Intenta con 'Vino'" searchIcon={ searchOutline } animated={ true } />
-
                 <IonGrid>
-
                     <IonRow className="ion-text-center">
                         <IonCol size="12">
                             <IonNote>{ (searchResults && searchResults.length) } { (searchResults.length > 1 || searchResults.length === 0) ? " productos encontrados." : " producto encontrado." } </IonNote>
                         </IonCol>
                     </IonRow>
-
                     <IonRow>
                         { searchResults && searchResults.map((product, index) => {
-
                             if ((index <= amountLoaded) && product.image) {
                                 return (
                                     <ProductCard key={ `producto_${ index }`} product={ product } index={ index } cartRef={ cartRef }  />
@@ -106,7 +104,6 @@ const Home : React.FC = () => {
                         }
                     </IonRow>
                 </IonGrid>
-
                 <IonInfiniteScroll threshold="100px" onIonInfinite={ fetchMore }>
 					<IonInfiniteScrollContent loadingSpinner="bubbles" loadingText="Cargando más..."/>
 				</IonInfiniteScroll>
@@ -124,7 +121,6 @@ const Home : React.FC = () => {
                     </IonFabList>
                 </IonFab>
             </IonContent>
-            
         </IonPage>
     );
 }
