@@ -1,6 +1,8 @@
 import { ProductStore } from "./ProductStore.ts";
 import { Product } from "./types.ts";
 
+const link:string = 'http://localhost:3000'
+
 
 export const fetchData = async () =>{
   const products:any = await fetchProducts('armchairs.json');
@@ -32,7 +34,7 @@ const apiFetch = async <T>(
   headers?: HeadersInit,
   body?: Record<string, any>
 ): Promise<T> => {
-  const url = `link/${ruta}`;
+  const url = `${link}/${ruta}`;
   const defaultHeaders: HeadersInit = {
     'Content-Type': 'application/json',
     ...headers,
@@ -68,9 +70,9 @@ const authHeader = async ()=>{
   return authHeader
 }
 
-export const login = async (username:string, password:string) => {
+export const fetchLogin = async (username:string, password:string) => {
   const body = { username, password };
-  return apiFetch<string>('login', 'POST', undefined, body);
+  return apiFetch<any>('login', 'POST', undefined, body);
 };
 
 export const fetchPersonas = async () => { 
