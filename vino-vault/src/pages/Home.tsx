@@ -2,10 +2,8 @@ import { IonBadge, IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButt
 import { add, cart, heart, personCircleOutline, searchOutline, settingsOutline } from "ionicons/icons";
 import { useEffect, useRef, useState } from "react";
 import ProductCard from "../components/ProductCard.tsx";
-
 import { CartStore } from "../data/CartStore.ts";
 import { ProductStore } from "../data/ProductStore.ts";
-
 import "./Home.css";
 import { Product } from "../data/types.ts";
 import React from "react";
