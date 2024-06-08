@@ -6,14 +6,6 @@ export interface Product {
   // Otros campos que pueda tener un producto
 }
 
-export interface ProductCategory {
-  id?: number;
-  name?: string;
-  slug?: string;
-  cover?: string;
-  products?: Product[];
-}
-
 export interface Producto {
   id_producto?: string,
   ean?:string,
