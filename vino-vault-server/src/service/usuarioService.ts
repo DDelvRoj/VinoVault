@@ -32,7 +32,7 @@ export class UsuarioService {
     async coindicenDatos (usuario:Usuario)  {
         const usuarioBusqueda:Usuario = new Usuario({usuario:usuario.usuario});
         const resultado:UsuarioInterface = await this.buscarUsuario(usuarioBusqueda);
-        if(resultado!=undefined && resultado !=null){
+        if(resultado['params'].length>0){
             const usuarioValidacion = await bcryptUtil.desencriptarYCompararData(transformarTexto(usuario.usuario), resultado.nombre);
             const claveValidacion = await bcryptUtil.desencriptarYCompararData(transformarTexto(usuario.clave), resultado.clave); 
             if(usuarioValidacion && claveValidacion) return resultado;
