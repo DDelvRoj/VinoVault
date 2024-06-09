@@ -6,7 +6,7 @@ import { CartStore } from "../data/CartStore.ts";
 import { FavouritesStore } from "../data/FavouritesStore.ts";
 import { ProductStore } from "../data/ProductStore.ts";
 import React from "react";
-import {  Product } from "../data/types.ts";
+import { Producto } from "../data/types.ts";
 
 
 
@@ -17,14 +17,14 @@ const FavouriteProducts : React.FC = () => {
     const products = ProductStore.useState(s => s.products);
     const favourites = FavouritesStore.useState(s => s.product_ids);
     const shopCart = CartStore.useState(s => s.product_ids);
-    const [ searchResults, setSearchResults ] = useState<Product[]>([]);
+    const [ searchResults, setSearchResults ] = useState<Producto[]>([]);
     const [ amountLoaded, setAmountLoaded ] = useState(6);
 
     useEffect(()=>{
         setSearchResults([]);
         const getFavoritos = ()=>{
             favourites.forEach(f=>{
-                const productosFavoritos = products.filter(p=>p.id.toString()===f)[0];
+                const productosFavoritos = products.filter(p=>p.id_producto===f)[0];
                 setSearchResults(previo=>[...previo,productosFavoritos]);
             });
         }
@@ -73,7 +73,7 @@ const FavouriteProducts : React.FC = () => {
                     <IonRow>
                         { searchResults && searchResults.map((product, index) => {
 
-                            if ((index <= amountLoaded) && product.image) {
+                            if ((index <= amountLoaded)) {
                                 return (
                                     <ProductCard key={ `producto_${ index }`} product={ product } index={ index } cartRef={ cartRef }  />
                                 );
