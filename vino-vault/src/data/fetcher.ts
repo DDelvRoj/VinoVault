@@ -1,26 +1,26 @@
 import { ProductStore } from "./ProductStore.ts";
-import { Product } from "./types.ts";
+import { Producto } from "./types.ts";
 
 const link:string = 'http://localhost:3000'
 
 
 export const fetchData = async () =>{
-  const products:any = await fetchProducts('armchairs.json');
-  ProductStore.update(s=>{s.products =  [...products]});
-}
-
-const fetchProducts = async (id: string): Promise<Product[]> => {
-  const response = await fetch(`products/${id}`);
-  const data: Product[] = await response.json();
-
-  // Set a product id
-  data.forEach((d, i) => {
-    d.id = i + 1;
+  const products:Producto[] = (await fetchProductos()).map(p=>{
+    if(p.imagen){
+      p.imagen = `data:image/png;base64,${p.imagen}`;
+    }
+    return p;
   });
 
-  return data;
+  console.log(products);
+  
+  ProductStore.update(s=>{
+    s.products = products;
+    if(products.length>0){
+      localStorage.setItem('productos',JSON.stringify(products));
+    }
+  });
 }
-
 
 interface FetchConfig {
   method: string;
@@ -79,10 +79,10 @@ export const fetchPersonas = async () => {
   return apiFetch('personas','GET', await authHeader());
 };
 
-export const fetchProductos = async () => {
-  return apiFetch<Product[]>('productos','GET', await authHeader());
+const fetchProductos = async () => {
+  return apiFetch<Producto[]>('productos/listar/todos','GET', await authHeader());
 };
 
 export const fetchProductById = async (id:string) => {
-  return apiFetch<Product>( `/${id}`,'GET', await authHeader());
+  return apiFetch<Producto>( `/${id}`,'GET', await authHeader());
 };
