@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { authenticateToken } from "../middleware/authMiddleware";
 import buscarCodigoDeBarra from "../service/webScrapingService";
-import {Producto as ProductoInterface, ProductoTemp as ProductoTempInterface} from '../type'
+import { Producto as ProductoInterface } from '../type'
 import { ultimosCambios } from "../middleware/ultimosCambiosMiddleware";
 import { ConexionDataBase } from "../model/conexionBD";
 import { ProductoService } from '../service/productoService';
@@ -9,6 +9,7 @@ import { ProductoTempService } from "../service/productoTempService";
 import { Producto } from "../entity/producto";
 import { ProductoTemp } from "../entity/productoTemp";
 import { getConexionCargada } from "../util/conexionUtil";
+import { buscarImagen } from "../util/imagenesUtil";
 
 const productosRouter = Router();
 
@@ -29,9 +30,10 @@ productosRouter.get('/productos/:id',authenticateToken, async(req:Request, res:R
 productosRouter.put('/productos',authenticateToken, async(req:Request, res:Response)=>{
   try {
     const conexion:ConexionDataBase = getConexionCargada(req);
-    const productoService:ProductoService = new ProductoService(conexion)
+    const productoService:ProductoService = new ProductoService(conexion);
+    const productoInsertable:ProductoInterface = req.body.producto as ProductoInterface;
     await conexion.conectar();
-    const producto: Producto = new Producto(req.body.producto as ProductoInterface);
+    const producto: Producto = new Producto(productoInsertable);
     console.log(producto);  
     await productoService.crearProducto(producto);
     await conexion.desconectar();
@@ -46,8 +48,23 @@ productosRouter.get('/productos/listar/todos',authenticateToken, async(req:Reque
   try {
     const conexion:ConexionDataBase = getConexionCargada(req);
     await conexion.conectar();
-    const resultado = (await new ProductoService(conexion).listarProductos());
+    let resultado = (await new ProductoService(conexion).listarProductos() as Producto[]);
     await conexion.desconectar();
+    for (const r of resultado) {
+      const ean = r.ean;
+      try {
+        const imagen = await buscarImagen(ean);
+        if (imagen) {
+          const preImagen = r.imagen;
+          r.imagen = imagen;
+          const postImagen = r.imagen;
+          console.log(`${preImagen?.length} y ${postImagen.length}`);
+        }
+      } catch (error) {
+        console.error('Error al buscar y convertir la imagen:', error);
+      }
+    }
+    resultado.forEach(r=>console.log(r));
     const productoDataLength:string = Buffer.byteLength(JSON.stringify(resultado),'utf-8').toString();
     res.appendHeader('Content-Length',productoDataLength);
     res.json(resultado);
