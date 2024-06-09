@@ -11,14 +11,13 @@ export const FavouritesStore = new Store<FavouritesStoreState>({
 });
 
 
-export const addToFavourites = (productID: number): void => {
+export const addToFavourites = (productID: string): void => {
   FavouritesStore.update(s => {
-    const productId = productID.toString();
-    const existingIndex = s.product_ids.findIndex(id => id === productId);
+    const existingIndex = s.product_ids.findIndex((p)=>p===productID)
     if (existingIndex !== -1) {
       s.product_ids.splice(existingIndex, 1);
     } else {
-      s.product_ids.push(productId);
+      s.product_ids.push(productID);
     }
   });
 }
