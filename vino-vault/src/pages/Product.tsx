@@ -1,4 +1,4 @@
-import { IonBadge, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonPage, IonRow, IonTitle, IonToolbar } from "@ionic/react";
+import { IonBadge, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonPage, IonRow, IonText, IonTitle, IonToolbar } from "@ionic/react";
 import {  arrowRedoOutline, cart, cartOutline, chevronBackOutline, heart, heartOutline } from "ionicons/icons";
 import { useEffect, useRef, useState } from "react";
 import ProductCard from "../components/ProductCard.tsx";
@@ -9,7 +9,7 @@ import {  ProductStore } from "../data/ProductStore.ts";
 
 import "./Product.css";
 import React from "react";
-import { Product as ProductType } from "../data/types.ts";
+import { Producto } from "../data/types.ts";
 import { useParams } from "react-router-dom";
 
 const Product : React.FC = () => {
@@ -20,42 +20,37 @@ const Product : React.FC = () => {
     const favourites = FavouritesStore.useState(s => s.product_ids);
     const [ isFavourite, setIsFavourite ] = useState(false);
     const shopCart = CartStore.useState(s => s.product_ids);
-    const [ product, setProduct ] = useState<ProductType>({});
+    const [ product, setProduct ] = useState<Producto>({cantidad:0, precio:0});
 
     useEffect(() => {
 
         const productID = params.id;
         
-        const tempProduct = products.filter(p => p.id.toString() === productID)[0];
+        const tempProduct = products.filter(p => p.id_producto === productID)[0];
         
         const tempIsFavourite = favourites.find(f => f === productID);
 
         setIsFavourite(tempIsFavourite ? true : false);
         setProduct(tempProduct);
     }, [ params.id ]);
-//error de tipo2
+    
     useEffect(() => {
 
-        const tempIsFavourite = favourites.find(f => f ===  product.id?.toString() );
+        const tempIsFavourite = favourites.find(f => f ===  product.id_producto );
         setIsFavourite(tempIsFavourite ? true : false);
     }, [favourites, product]);
 
-    const addProductToFavourites = (e: any, productID: number ) => {
+    const addProductToFavourites = (e: any, productID: string ) => {
 
         e.preventDefault();
         addToFavourites(productID);
 
-
-        //document.getElementById(`placeholder_favourite_product_${ categorySlug }_${ productID }`).style.display = "";
-        //document.getElementById(`placeholder_favourite_product_${ categorySlug }_${ productID }`).classList.add("animate__fadeOutTopRight");
     }
 
-    const addProductToCart = (e: any, productID: number ) => {
+    const addProductToCart = (e: any, productID: string ) => {
 
         e.preventDefault();
 
-        //document.getElementById(`placeholder_cart_${ categorySlug }_${ productID }`).style.display = "";
-       // document.getElementById(`placeholder_cart_${ categorySlug }_${ productID }`).classList.add("animate__fadeOutUp");
 
         setTimeout(() => {
 
@@ -99,27 +94,32 @@ const Product : React.FC = () => {
                             <IonCard className="categoryCard">
                                 <IonCardHeader className="productCardHeader">
                                     <div className="productCardActions">
-                                        <IonIcon className="productCardAction"  color={ isFavourite ? "danger" : "medium" } icon={ isFavourite ? heart : heartOutline } onClick={ e => addProductToFavourites(e,(product.id?product.id:0)) } />
+                                        <IonIcon className="productCardAction"  color={ isFavourite ? "danger" : "medium" } icon={ isFavourite ? heart : heartOutline } onClick={ e => addProductToFavourites(e,(product?.id_producto ?? "")) } />
                                         <IonIcon style={{ position: "absolute", display: "none" }} id={ `lugar_producto_favorito_${ params.id }` } className="productCardAction  animate__animated" color="danger" icon={ heart } />
                                         <IonIcon className="productCardAction" size="medium" icon={ arrowRedoOutline } />
                                     </div>
-                                    
-                                    <img src={ product.image } alt="product pic" />
-                                    <p className="ion-text-wrap">{ product.name }</p>
+                                    <IonText color="dark" style={{maxWeight:'250px'}}><h3 className="ion-text-wrap"><b>{ product.nombre_producto }</b></h3></IonText>
+                                    <img className="productImage" src={ product?.imagen??"img-no-encontrado.png"} alt="product pic" />
+                                    <IonText color="dark"><h4><b>Marca</b></h4></IonText>
+                                    <p className="ion-text-wrap">{ product.marca }</p>
+                                    <IonText color="dark"><h4><b>Descripción del Producto</b></h4></IonText>
+                                    <div className="productDescription">
+                                        <p className="ion-text-wrap custom-scrollbar">{product.descripcion}</p>
+                                    </div>
                                 </IonCardHeader>
 
                                 <IonCardContent className="categoryCardContent">
                                     
                                     <div className="productPrice">
                                         <IonButton color="light" size="large">
-                                            { product.price }
+                                            { product.precio?.toLocaleString('es-ES').concat(' ₲') }
                                         </IonButton>
                                         <IonButton size="large" color="dark" onClick={ e => addProductToCart(e,
-                                            (product.id?product.id:-1)) }>
-                                            <IonIcon icon={ cartOutline } />&nbsp;&nbsp;Add to Cart
+                                            (product?.id_producto??"")) }>
+                                            <IonIcon icon={ cartOutline } />&nbsp;&nbsp;Agregar al Carrito
                                         </IonButton>
 
-                                        <IonIcon icon={ cart } color="dark" style={{ position: "absolute", display: "none", fontSize: "3rem" }} id={ `lugar_carrito_${ product.id }` } className="animate__animated" />
+                                        <IonIcon icon={ cart } color="dark" style={{ position: "absolute", display: "none", fontSize: "3rem" }} id={ `lugar_carrito_${ product.id_producto }` } className="animate__animated" />
                                     </div>
                                 </IonCardContent>
                             </IonCard>
@@ -135,7 +135,7 @@ const Product : React.FC = () => {
                         <IonRow>
                             { products.map((otro, index) => {
 
-                                if ((otro.id !== product.id) && product.image && index < 4) {
+                                if ((otro.id_producto !== product.id_producto) && index < 4) {
 
                                     return (
 
