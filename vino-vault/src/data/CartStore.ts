@@ -10,14 +10,14 @@ export const CartStore = new Store<CartStoreState>({
   product_ids: []
 });
 
-export const addToCart = ( productID: number): void => {
+export const addToCart = ( productID: string): void => {
   CartStore.update(s => {
     s.product_ids = [...s.product_ids, `${productID}`];
   });
 }
 
-export const removeFromCart = (productIndex: number): void => {
+export const removeFromCart = (productID: string): void => {
   CartStore.update(s => {
-    s.product_ids.splice(productIndex, 1);
+    s.product_ids = s.product_ids.filter(p=>p!=productID);
   });
 }
