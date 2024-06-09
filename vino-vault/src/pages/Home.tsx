@@ -1,14 +1,15 @@
-import { IonBadge, IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonFabList, IonGrid, IonHeader, IonIcon, IonInfiniteScroll, IonInfiniteScrollContent, IonNote, IonPage, IonRow, IonSearchbar, IonTitle, IonToolbar } from "@ionic/react";
-import { add, cart, heart, personCircleOutline, searchOutline, settingsOutline } from "ionicons/icons";
+import { IonAlert, IonBadge, IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonFabList, IonGrid, IonHeader, IonIcon, IonInfiniteScroll, IonInfiniteScrollContent, IonNote, IonPage, IonRefresher, IonRefresherContent, IonRow, IonSearchbar, IonTitle, IonToolbar, RefresherEventDetail } from "@ionic/react";
+import { add, cart, exit, heart, personCircleOutline, searchOutline, settingsOutline } from "ionicons/icons";
 import { useEffect, useRef, useState } from "react";
 import ProductCard from "../components/ProductCard.tsx";
 import { CartStore } from "../data/CartStore.ts";
 import { ProductStore } from "../data/ProductStore.ts";
 import "./Home.css";
-import { Product } from "../data/types.ts";
+import { Producto } from "../data/types.ts";
 import React from "react";
 import { FavouritesStore } from "../data/FavouritesStore.ts";
 import { fetchData } from "../data/fetcher.ts";
+import { useAutenticacion } from "../contexts/AutenticacionContext.tsx";
 
 const Home : React.FC = () => {
 
@@ -16,19 +17,16 @@ const Home : React.FC = () => {
     const products = ProductStore.useState(s=>s.products);
     const favoritos = FavouritesStore.useState(s=>s.product_ids);
     const shopCart = CartStore.useState(s => s.product_ids);
-    const [ searchResults, setsearchResults ] = useState<Product[]>([]);
+    const [ searchResults, setsearchResults ] = useState<Producto[]>([]);
     const [ amountLoaded, setAmountLoaded ] = useState(6);
+    const {logout} = useAutenticacion();
 
 
     useEffect(()=>{
-        fetchData();
-    }, []);
-
-    useEffect(()=>{
-        if(searchResults.length===0){
-            setsearchResults(products);
+        if(!localStorage.getItem('productos')){
+            fetchData();
         }
-    },[products, searchResults]);
+    }, []);
 
     useEffect(() => {
         if(amountLoaded>=0){
@@ -41,6 +39,10 @@ const Home : React.FC = () => {
             setsearchResults(productosTop);
         }
     }, [amountLoaded]);
+    const updateProductos = async (event: CustomEvent<RefresherEventDetail>)=> {
+       await fetchData();
+       event.detail.complete();
+    }
 
     const fetchMore = async (e:any) => {
 		setAmountLoaded(prevAmount => (prevAmount + 6));
@@ -50,12 +52,12 @@ const Home : React.FC = () => {
     const search = async (e:React.KeyboardEvent<HTMLIonSearchbarElement>) => {
         const searchVal = e.currentTarget.value;
         if (searchVal !='' && searchVal && searchVal!=undefined) {
-            const tempResults :Product[]|undefined= products?.filter(p => p.name?.toLowerCase().includes((searchVal?searchVal.toLowerCase():'')));
+            const tempResults :Producto[]|undefined= products?.filter(p => p.nombre_producto?.toLowerCase().includes((searchVal?searchVal.toLowerCase():'')));
             if (tempResults!==undefined){
                 setsearchResults(tempResults);
-            } else {
-                setsearchResults(products);
             }
+        }else {
+            setsearchResults(products)
         }
     }
 
@@ -78,11 +80,17 @@ const Home : React.FC = () => {
 						<IonButton color="dark" routerLink="/cart">
 							<IonIcon icon={ cart } />
 						</IonButton>
+                        <IonButton id="btn-cerrar-sesion" title="Salir" color="danger">
+                            <IonIcon icon={exit} />
+                        </IonButton>
 					</IonButtons>
 				</IonToolbar>
 			</IonHeader>
 			<IonContent fullscreen>
-
+                <IonRefresher slot="fixed" pullFactor={0.5} pullMin={100} pullMax={200} onIonRefresh={updateProductos}>
+                    <IonRefresherContent >
+                    </IonRefresherContent>
+                </IonRefresher>
                 <IonSearchbar className="search" onKeyUp={ search } placeholder="Intenta con 'Vino'" searchIcon={ searchOutline } animated={ true } />
                 <IonGrid>
                     <IonRow className="ion-text-center">
@@ -92,7 +100,7 @@ const Home : React.FC = () => {
                     </IonRow>
                     <IonRow>
                         { searchResults && searchResults.map((product, index) => {
-                            if ((index <= amountLoaded) && product.image) {
+                            if ((index <= amountLoaded)) {
                                 return (
                                     <ProductCard key={ `producto_${ index }`} product={ product } index={ index } cartRef={ cartRef }  />
                                 );
@@ -103,12 +111,12 @@ const Home : React.FC = () => {
                     </IonRow>
                 </IonGrid>
                 <IonInfiniteScroll threshold="100px" onIonInfinite={ fetchMore }>
-					<IonInfiniteScrollContent loadingSpinner="bubbles" loadingText="Cargando más..."/>
-				</IonInfiniteScroll>
+                <IonInfiniteScrollContent loadingSpinner="bubbles" loadingText="Cargando más..."/>
+                </IonInfiniteScroll>
                 <IonFab vertical="bottom" horizontal="end" slot="fixed">
                     <IonFabButton color="dark">
                         <IonIcon icon={settingsOutline} />
-                    </IonFabButton>
+                    </IonFabButton> 
                     <IonFabList side="top">
                         <IonFabButton color="dark" routerLink="/registrar-producto">
                             <IonIcon icon={add} />
@@ -119,6 +127,12 @@ const Home : React.FC = () => {
                     </IonFabList>
                 </IonFab>
             </IonContent>
+            <IonAlert trigger="btn-cerrar-sesion" header="Cerrar Sesión" message="¿Realmente desea cerrar sesión?"
+            buttons={[
+                {text:'Si',handler:logout},
+                {text:'No', role:"cancel"}
+            ]}
+            />
         </IonPage>
     );
 }
