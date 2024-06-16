@@ -3,8 +3,6 @@ import { IonApp, IonRouterOutlet } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { setupIonicReact } from '@ionic/react';
 
-import Home from './pages/Home.tsx';
-
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
 
@@ -23,80 +21,67 @@ import '@ionic/react/css/display.css';
 
 /* Theme variables */
 import './theme/variables.css';
-import { useEffect } from 'react';
-import { fetchData } from './data/fetcher.ts';
-import CategoryProducts from './pages/CategoryProducts.tsx';
+import Home from './pages/Home.tsx';
 import Product from './pages/Product.tsx';
 import FavouriteProducts from './pages/FavouriteProducts.tsx';
 import CartProducts from './pages/CartProducts.tsx';
 import UserSettings from './pages/UserSettings.tsx';
 import AddUser from './pages/AddUser.tsx';
 import RegistrarProducto from './pages/RegistrarProducto.tsx';
-import SalesList from './pages/SalesList.tsx';
-import SaleDetails from './pages/SaleDetails.tsx';
+import Login from './pages/Login.tsx';
+import { useAutenticacion } from './contexts/AutenticacionContext.tsx';
+import { AutenticacionProvider } from './contexts/AutenticacionProvider.tsx';
+import ProtectedRoute from './components/ProtectedRoute.tsx';
+import { useEffect, useState } from 'react';
 
 
 setupIonicReact({});
 
-const App = () => {
-
-	useEffect(() => {
-
-		fetchData();
-		console.log("Me corroooo");
-		
-	}, []);
+const App: React.FC = () => {
 
 	return (
-		<IonApp>
-			<IonReactRouter>
+		<AutenticacionProvider>
+			<IonApp>
+				<Rutas/>
+			</IonApp>
+		</AutenticacionProvider>
+	);
+}
+
+const Rutas: React.FC = ()=>{
+
+	const {token} = useAutenticacion();
+	const [logeado, setLogeado] = useState<boolean>(true);
+
+	useEffect(()=>{
+		setLogeado(token?true:false);
+	},[token])
+
+	return(
+		<IonReactRouter>
 				<IonRouterOutlet >
-					<Route path="/" exact={true}>
-						<Redirect to="/home" />
+					<Route exact={true} path="/">
+						<Redirect to='/home'/>
 					</Route>
-					<Route path="/home" exact={true}>
-						<Home />
+					<ProtectedRoute path="/home" component={Home} estaLogeado={logeado} exact/>
+
+					<Route path="/login" exact>
+						<Login/>
 					</Route>
 
-					<Route path="/favourites" exact>
-						<FavouriteProducts />
-					</Route>
+					<ProtectedRoute path="/favourites" component={FavouriteProducts} estaLogeado={logeado} exact/>
 
-					<Route path="/cart" exact>
-						<CartProducts />
-					</Route>
+					<ProtectedRoute path="/cart" component={CartProducts} estaLogeado={logeado} exact/>
 
-					<Route path="/category/:slug" exact>
-						<CategoryProducts />
-					</Route>
+					<ProtectedRoute path="/producto/:id" component={Product} estaLogeado={logeado} exact/>
 
-					<Route path="/category/:slug/:id" exact>
-						<Product />
-					</Route>
-
-					<Route path="/registrar-producto" exact>
-						<RegistrarProducto />
-					</Route>
-
-					<Route path="/ajustes-usuario" exact>
-						<UserSettings />
-					</Route>
-
-					<Route path="/add-user" exact>
-						<AddUser />
-					</Route>
-
-					<Route path="/sales" exact>
-                    <SalesList />
-                </Route>
-            
-			
+					<ProtectedRoute path="/registrar-producto" component={RegistrarProducto} estaLogeado={logeado} exact/>
+					
+					<ProtectedRoute path="/ajustes-usuario" component={UserSettings} estaLogeado={logeado} exact/>
+					
+					<ProtectedRoute path="/add-user" component={AddUser} estaLogeado={logeado} exact/>
 				</IonRouterOutlet>
-
-
-
-			</IonReactRouter>
-		</IonApp>
+		</IonReactRouter>
 	);
 }
 

@@ -2,6 +2,8 @@ import puppeteer, { Page } from "puppeteer";
 import fetch from 'node-fetch';
 import { traducir } from "../util/traductorUtil";
 import { ProductoTemp } from "../type";
+import { guardarImagen } from "../util/imagenesUtil";
+
 
 const browser = puppeteer.launch({
     headless:false,
@@ -55,11 +57,14 @@ async function buscarCodigoDeBarra (codigo:string){
         
         const imagenTag = await page.$('.product-image.mobile > img');
         const src = imagenTag ? await (await imagenTag.getProperty('src')).jsonValue() : null;
-        // Realizar una solicitud HTTP para obtener los datos de la imagen
-        const response = await fetch(src);
-        // Convertir los datos de la imagen a base64
-        const imageData = await response.buffer();
-        const base64ImageData = imageData.toString('base64');
+        let base64ImageData = null;
+        if(src){
+            const response = await fetch(src);
+            // Convertir los datos de la imagen a base64
+            const imageData = await response.buffer();
+            base64ImageData = imageData.toString('base64');
+            guardarImagen(imageData,codigo); 
+        }
         const descripcionTraducida:string = await traducir(descripcion);
         const producto:ProductoTemp={
             ean: codigo,

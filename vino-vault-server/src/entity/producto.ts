@@ -7,6 +7,7 @@ export class Producto {
     private _ean:string;
     private _cantidad:number = 0;
     private _descripcion:string;
+    private _imagen:string;
     private _marca:string;
     private _nombre_producto:string;
     private _precio:number = 0;
@@ -50,6 +51,16 @@ export class Producto {
     }
 
     @Column()
+    public get imagen() : string {
+        return this._imagen;
+    }
+    
+    
+    public set imagen(imagen : string) {
+        this._imagen = imagen;
+    }
+
+    @Column()
     public get marca() : string {
         return this._marca;
     }
@@ -87,6 +98,7 @@ export class Producto {
             this._id_producto=pro.id_producto;
             this._marca=pro.marca;
             this._nombre_producto=pro.nombre_producto;
+            this._imagen = pro.imagen;
             this._precio=pro.precio;
         }
     }

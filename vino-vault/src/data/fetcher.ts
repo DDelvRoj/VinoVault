@@ -1,55 +1,88 @@
 import { ProductStore } from "./ProductStore.ts";
-import { Product, ProductCategory } from "./types.ts";
+import { Producto } from "./types.ts";
+
+const link:string = 'http://localhost:3000'
 
 
-const fethData = async () =>{
-
-}
-
-const fetchProductos = async () =>{
-  
-}
-
-export const fetchData = async (): Promise<ProductCategory[]> => {
-  const json = ["beds.json", "armchairs.json", "coffee_tables.json", "cushions.json", "floor_lamps.json", "office_chairs.json"];
-
-  let products: ProductCategory[] = [];
-
-  for (const category of json) {
-    const categoryProducts = await fetchProducts(category);
-
-    let categoryName = category.replace(".json", "").replace("_", " ");
-    categoryName = uppercaseWords(categoryName);
-
-    const productCategory: any = {
-      name: categoryName,
-      slug: category.replace(".json", ""),
-      cover: categoryProducts[6]?.image || "", // Agrega una verificación de existencia
-      products: categoryProducts
-    };
-
-    products = [...products, productCategory];
-    ProductStore.update(s => { s.products = [...s.products, productCategory]; });
-  }
-
-  return products;
-}
-
-const fetchProducts = async (category: string): Promise<Product[]> => {
-  const response = await fetch(`products/${category}`);
-  const data: Product[] = await response.json();
-
-  // Set a product id
-  data.forEach((d, i) => {
-    d.id = i + 1;
+export const fetchData = async () =>{
+  const products:Producto[] = (await fetchProductos()).map(p=>{
+    if(p.imagen){
+      p.imagen = `data:image/png;base64,${p.imagen}`;
+    }
+    return p;
   });
 
-  return data;
+  console.log(products);
+  
+  ProductStore.update(s=>{
+    s.products = products;
+    if(products.length>0){
+      localStorage.setItem('productos',JSON.stringify(products));
+    }
+  });
 }
 
-const uppercaseWords = (words: string): string => {
-  return words.toLowerCase()
-    .split(' ')
-    .map(s => s.charAt(0).toUpperCase() + s.substring(1))
-    .join(' ');
+interface FetchConfig {
+  method: string;
+  headers: HeadersInit;
+  body?: string;
 }
+
+const apiFetch = async <T>(
+  ruta: string,
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+  headers?: HeadersInit,
+  body?: Record<string, any>
+): Promise<T> => {
+  const url = `${link}/${ruta}`;
+  const defaultHeaders: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...headers,
+  };
+
+  const config: FetchConfig = {
+    method: method,
+    headers: defaultHeaders,
+  };
+
+  if (body) {
+    config.body = JSON.stringify(body);
+  }
+
+  try {
+    const response = await fetch(url, config);
+    if (!response.ok) {
+      const errorMessage = `Error: ${response.statusText}`;
+      throw new Error(errorMessage);
+    }
+    return (await response.json()) as T;
+  } catch (error) {
+    console.error('Fetch error:', error);
+    throw error;
+  }
+};
+
+const authHeader = async ()=>{
+  const token = localStorage.getItem('token');
+  const authHeader:HeadersInit = {
+    'Authorization':`Bearer ${token}`
+  }
+  return authHeader
+}
+
+export const fetchLogin = async (username:string, password:string) => {
+  const body = { username, password };
+  return apiFetch<any>('login', 'POST', undefined, body);
+};
+
+export const fetchPersonas = async () => { 
+  return apiFetch('personas','GET', await authHeader());
+};
+
+const fetchProductos = async () => {
+  return apiFetch<Producto[]>('productos/listar/todos','GET', await authHeader());
+};
+
+export const fetchProductById = async (id:string) => {
+  return apiFetch<Producto>( `/${id}`,'GET', await authHeader());
+};

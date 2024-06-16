@@ -1,89 +1,140 @@
-
-import { IonBadge, IonButton, IonButtons, IonCard, IonCardContent, IonCardSubtitle, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonPage, IonRow, IonTitle, IonToolbar } from '@ionic/react';
-
+import { IonAlert, IonBadge, IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonFabList, IonGrid, IonHeader, IonIcon, IonInfiniteScroll, IonInfiniteScrollContent, IonNote, IonPage, IonRefresher, IonRefresherContent, IonRow, IonSearchbar, IonTitle, IonToolbar, RefresherEventDetail } from "@ionic/react";
+import { add, cart, exit, heart, personCircleOutline, searchOutline, settingsOutline } from "ionicons/icons";
+import { useEffect, useRef, useState } from "react";
+import ProductCard from "../components/ProductCard.tsx";
+import { CartStore } from "../data/CartStore.ts";
+import { ProductStore } from "../data/ProductStore.ts";
 import "./Home.css";
-import { cart, heart } from 'ionicons/icons';
+import { Producto } from "../data/types.ts";
+import React from "react";
+import { FavouritesStore } from "../data/FavouritesStore.ts";
+import { fetchData } from "../data/fetcher.ts";
+import { useAutenticacion } from "../contexts/AutenticacionContext.tsx";
 
-import { ProductStore } from '../data/ProductStore.ts';
-import { FavouritesStore } from '../data/FavouritesStore.ts';
-import { CartStore } from '../data/CartStore.ts';
-import React, { useMemo } from 'react';
+const Home : React.FC = () => {
 
-const Home : React.FC = ()=> {
+    const cartRef = useRef<HTMLIonIconElement>(null);
+    const products = ProductStore.useState(s=>s.products);
+    const favoritos = FavouritesStore.useState(s=>s.product_ids);
+    const shopCart = CartStore.useState(s => s.product_ids);
+    const [ searchResults, setsearchResults ] = useState<Producto[]>([]);
+    const [ amountLoaded, setAmountLoaded ] = useState(6);
+    const {logout} = useAutenticacion();
 
-  	const products = ProductStore.useState(s => s.products);
-  	const favourites = FavouritesStore.useState(s => s.product_ids);
-	const shopCart = CartStore.useState(s => s.product_ids);
-	//se memoizan las categorias para que solo se calculen una vez no se q
-	const uniqueCategories = useMemo(() => {
-        const categoryMap = new Map();
-        products.forEach(product => {
-            if (!categoryMap.has(product.slug)) {
-                categoryMap.set(product.slug, product);
+
+    useEffect(()=>{
+        if(!localStorage.getItem('productos')){
+            fetchData();
+        }
+    }, []);
+
+    useEffect(() => {
+        if(amountLoaded>=0){
+            const productosTop = products?.map((p,i)=>{
+                if(i<=amountLoaded){
+                    return p;
+                }
+                return null
+            }).filter(p=>p!=null);
+            setsearchResults(productosTop);
+        }
+    }, [amountLoaded]);
+    const updateProductos = async (event: CustomEvent<RefresherEventDetail>)=> {
+       await fetchData();
+       event.detail.complete();
+    }
+
+    const fetchMore = async (e:any) => {
+		setAmountLoaded(prevAmount => (prevAmount + 6));
+		e.target.complete();
+	}
+
+    const search = async (e:React.KeyboardEvent<HTMLIonSearchbarElement>) => {
+        const searchVal = e.currentTarget.value;
+        if (searchVal !='' && searchVal && searchVal!=undefined) {
+            const tempResults :Producto[]|undefined= products?.filter(p => p.nombre_producto?.toLowerCase().includes((searchVal?searchVal.toLowerCase():'')));
+            if (tempResults!==undefined){
+                setsearchResults(tempResults);
             }
-        });
-        return Array.from(categoryMap.values());
-    }, [products]);
+        }else {
+            setsearchResults(products)
+        }
+    }
 
-	return (
-		<IonPage id="home-page" className="homePage ">
-			<IonHeader>
+    return (
+
+        <IonPage id="category-page" className="categoryPage">
+            <IonHeader>
 				<IonToolbar>
-					<IonTitle>Categorias</IonTitle>
-
-					<IonButtons slot="start" className="ion-padding-start">
-						<IonCardSubtitle className="logo">VinoVault</IonCardSubtitle>
-					</IonButtons>
-
-					<IonButtons slot="end">
+					<IonTitle>Productos</IonTitle>
+                    <IonButtons slot="end">
 						<IonBadge color="danger">
-                            { favourites.length }
+                            { favoritos.length }
                         </IonBadge>
 						<IonButton color="danger" routerLink="/favourites">
 							<IonIcon icon={ heart } />
 						</IonButton>
-
 						<IonBadge color="dark">
                             { shopCart.length }
                         </IonBadge>
 						<IonButton color="dark" routerLink="/cart">
 							<IonIcon icon={ cart } />
 						</IonButton>
+                        <IonButton id="btn-cerrar-sesion" title="Salir" color="danger">
+                            <IonIcon icon={exit} />
+                        </IonButton>
 					</IonButtons>
 				</IonToolbar>
 			</IonHeader>
-			
 			<IonContent fullscreen>
-				<IonHeader collapse="condense">
-					<IonToolbar>
-					<IonTitle size="large">
-						Categories
-					</IonTitle>
-					</IonToolbar>
-				</IonHeader>
-
-				<IonGrid>
-					<IonRow>
-						{ uniqueCategories.map((category, index) => {
-
-							return (
-								<IonCol size="6" key={ `category_list_${ index }`}>
-									<IonCard routerLink={ `/category/${ category.slug }`} className="categoryCard">
-										
-										<img src={ category.cover } alt="category cover" />
-
-										<IonCardContent className="categoryCardContent">
-											<IonCardSubtitle>{ category.name }</IonCardSubtitle>
-										</IonCardContent>
-									</IonCard>
-								</IonCol>
-							)
-						})}
-					</IonRow>
-				</IonGrid>
-			</IonContent>
-		</IonPage>
-	);
-};
+                <IonRefresher slot="fixed" pullFactor={0.5} pullMin={100} pullMax={200} onIonRefresh={updateProductos}>
+                    <IonRefresherContent >
+                    </IonRefresherContent>
+                </IonRefresher>
+                <IonSearchbar className="search" onKeyUp={ search } placeholder="Intenta con 'Vino'" searchIcon={ searchOutline } animated={ true } />
+                <IonGrid>
+                    <IonRow className="ion-text-center">
+                        <IonCol size="12">
+                            <IonNote>{ (searchResults && searchResults.length) } { (searchResults.length > 1 || searchResults.length === 0) ? " productos encontrados." : " producto encontrado." } </IonNote>
+                        </IonCol>
+                    </IonRow>
+                    <IonRow>
+                        { searchResults && searchResults.map((product, index) => {
+                            if ((index <= amountLoaded)) {
+                                return (
+                                    <ProductCard key={ `producto_${ index }`} product={ product } index={ index } cartRef={ cartRef }  />
+                                );
+                            }
+                            return null;
+                        }).filter(o=>o!=null)
+                        }
+                    </IonRow>
+                </IonGrid>
+                <IonInfiniteScroll threshold="100px" onIonInfinite={ fetchMore }>
+                <IonInfiniteScrollContent loadingSpinner="bubbles" loadingText="Cargando más..."/>
+                </IonInfiniteScroll>
+                <IonFab vertical="bottom" horizontal="end" slot="fixed">
+                    <IonFabButton color="dark">
+                        <IonIcon icon={settingsOutline} />
+                    </IonFabButton> 
+                    <IonFabList side="top">
+                        <IonFabButton color="dark" routerLink="/registrar-producto">
+                            <IonIcon icon={add} />
+                        </IonFabButton>
+                        <IonFabButton color="dark" routerLink="/ajustes-usuario">
+                            <IonIcon icon={personCircleOutline} />
+                        </IonFabButton>
+                    </IonFabList>
+                </IonFab>
+            </IonContent>
+            <IonAlert trigger="btn-cerrar-sesion" header="Cerrar Sesión" message="¿Realmente desea cerrar sesión?"
+            buttons={[
+                {text:'Si',handler:logout},
+                {text:'No', role:"cancel"}
+            ]}
+            />
+        </IonPage>
+    );
+}
 
 export default Home;

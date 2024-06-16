@@ -30,6 +30,8 @@
 .productCardHeader {
 
     min-height: 17rem;
+    align-items: center;
+    
 }
 
 .productCardHeader p {
@@ -63,4 +65,28 @@
 
     display: flex;
     flex-direction: row;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px; /* Ancho del scrollbar */
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--ion-color-primary); /* Color del scrollbar */
+    border-radius: 4px; /* Borde del scrollbar */
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background-color: var(--ion-color-light); /* Color de fondo del scrollbar */
+  }
+
+  .productImage {
+    max-width: 500px;
+    max-height: 500px;
+   
+    object-fit: cover; /* Controla cómo la imagen se ajusta a su contenedor manteniendo las dimensiones y recortando si es necesario */
+}
+  .productDescription {
+    max-height: 100px; /* o cualquier otra altura máxima deseada */
+    overflow-y: auto; /* Añade barras de desplazamiento vertical si el contenido excede la altura máxima */
 }

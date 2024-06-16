@@ -3,6 +3,7 @@ export interface Producto {
     ean?:string,
     nombre_producto?:string,
     cantidad?:number,
+    imagen?:string,
     descripcion?:string,
     marca?:string,
     precio?:number

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonInput, IonTextarea, IonList, IonItem, IonButton, IonLabel, IonIcon } from '@ionic/react';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonInput, IonTextarea, IonList, IonItem, IonButton, IonLabel, IonIcon, IonButtons } from '@ionic/react';
 import { chevronBackOutline } from 'ionicons/icons';
 import { useHistory } from "react-router-dom";
 const RegistrarProducto: React.FC = () => {
@@ -25,10 +25,11 @@ const RegistrarProducto: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          
+          <IonButtons>
             <IonButton slot='start' onClick={() => history.goBack()}>
-              <IonIcon icon={ chevronBackOutline } />&nbsp;Regresar
+              <IonIcon icon={ chevronBackOutline }/>&nbsp;Regresar
             </IonButton>
+          </IonButtons>
             <IonTitle>Registrar Producto</IonTitle>
         </IonToolbar>
       </IonHeader>
