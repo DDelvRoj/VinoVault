@@ -78,11 +78,6 @@ const CartProducts : React.FC = () => {
         )
     }
 
-    const removeProductFromCart = async (item: string) => {
-
-        removeFromCart(item);
-    }
-
     return (
 
         <IonPage id="category-page" className="categoryPage">
