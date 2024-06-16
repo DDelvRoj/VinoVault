@@ -25,9 +25,27 @@ productosRouter.get('/productos/:id',authenticateToken, async(req:Request, res:R
     console.log(error);
     res.status(500).json({error:error})
   }
+});
+productosRouter.put('/productos', authenticateToken, async(req:Request, res:Response)=>{
+  try {
+    const productoMod:ProductoInterface = req.body.producto as ProductoInterface;
+    const conexion:ConexionDataBase = getConexionCargada(req);
+    const productoService:ProductoService = new ProductoService(conexion);
+    await conexion.conectar();
+    const producto:Producto = new Producto(productoMod);
+    if(!productoMod.id_producto){
+      await conexion.desconectar();
+      res.status(401).json({error:'El producto posee parametros inválidos.'})
+    }
+    await productoService.modificarProducto(producto);
+    await conexion.desconectar();
+    res.status(201).json({estado:'Modificación exitosa.'})
+  } catch (error) {
+    res.status(500).json({error:`Error al modificar el producto: ${error}`})
+  }
 })
 
-productosRouter.put('/productos',authenticateToken, async(req:Request, res:Response)=>{
+productosRouter.post('/productos',authenticateToken, async(req:Request, res:Response)=>{
   try {
     const conexion:ConexionDataBase = getConexionCargada(req);
     const productoService:ProductoService = new ProductoService(conexion);
@@ -37,7 +55,7 @@ productosRouter.put('/productos',authenticateToken, async(req:Request, res:Respo
     console.log(producto);  
     await productoService.crearProducto(producto);
     await conexion.desconectar();
-    res.json({estado:'Inserción exitosa.'})
+    res.status(201).json({estado:'Inserción exitosa.'})
   } catch (error) {
     console.log(error);
     res.status(500).json({error:`Error al insertar los productos: ${error}`})
@@ -114,7 +132,7 @@ async (req: Request, res: Response) => {
       console.error('Error al obtener el producto:', error);
       res.status(404).json({error:'No logramos encontrar el producto requerido en ninguna base de datos, '+
       'cabe la posibilidad de que el producto buscado haya caído en falsificación, '+
-      'no tiene documentos en órden, o simplemente no exista. En estás situaciones le recomendamos ingresar el producto '+
+      'no tiene documentos en órden, o simplemente no exista. En todo caso recomendamos ingresar el producto '+
       'manualmente.'
     })
   });
