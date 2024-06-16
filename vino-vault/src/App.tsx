@@ -32,6 +32,8 @@ import CartProducts from './pages/CartProducts.tsx';
 import UserSettings from './pages/UserSettings.tsx';
 import AddUser from './pages/AddUser.tsx';
 import RegistrarProducto from './pages/RegistrarProducto.tsx';
+import SalesList from './pages/SalesList.tsx';
+import SaleDetails from './pages/SaleDetails.tsx';
 
 
 setupIonicReact({});
@@ -83,6 +85,11 @@ const App = () => {
 					<Route path="/add-user" exact>
 						<AddUser />
 					</Route>
+
+					<Route path="/sales" exact>
+                    <SalesList />
+                </Route>
+            
 			
 				</IonRouterOutlet>
 

@@ -1,0 +1,26 @@
+.sales-header,
+.sales-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    align-items: center;
+    width: 100%;
+}
+
+.sales-column {
+    padding: 10px;
+    text-align: left;
+}
+
+.sales-header {
+    font-weight: bold;
+    border-bottom: 2px solid #ccc;
+}
+
+.sales-row {
+    border-bottom: 1px solid #ccc;
+}
+
+.sales-column:last-child {
+    display: flex;
+    justify-content: flex-end;
+}
