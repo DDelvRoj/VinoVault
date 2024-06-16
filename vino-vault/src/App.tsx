@@ -33,6 +33,7 @@ import { useAutenticacion } from './contexts/AutenticacionContext.tsx';
 import { AutenticacionProvider } from './contexts/AutenticacionProvider.tsx';
 import ProtectedRoute from './components/ProtectedRoute.tsx';
 import { useEffect, useState } from 'react';
+import SalesList from './pages/SalesList.tsx';
 
 
 setupIonicReact({});
@@ -80,6 +81,9 @@ const Rutas: React.FC = ()=>{
 					<ProtectedRoute path="/ajustes-usuario" component={UserSettings} estaLogeado={logeado} exact/>
 					
 					<ProtectedRoute path="/add-user" component={AddUser} estaLogeado={logeado} exact/>
+
+					<ProtectedRoute path="/ventas" component={SalesList} estaLogeado={logeado} exact/>
+					
 				</IonRouterOutlet>
 		</IonReactRouter>
 	);
