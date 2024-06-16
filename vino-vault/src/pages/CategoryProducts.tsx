@@ -1,6 +1,6 @@
 import { IonBadge, IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonFabList, IonGrid, IonHeader, IonIcon, IonInfiniteScroll, IonInfiniteScrollContent, IonNote, IonPage, IonRow, IonSearchbar, IonTitle, IonToolbar } from "@ionic/react";
 import {useParams} from 'react-router-dom'
-import { add, addCircle, cart, chevronBackOutline, personCircleOutline, searchOutline, settingsOutline } from "ionicons/icons";
+import { add, addCircle, cart, chevronBackOutline, personCircleOutline, searchOutline, settingsOutline, wine } from "ionicons/icons";
 import { useEffect, useRef, useState } from "react";
 import ProductCard from "../components/ProductCard.tsx";
 //import UserSettings from './pages/UserSettings';
@@ -119,11 +119,14 @@ const CategoryProducts : React.FC = () => {
                         <IonIcon icon={settingsOutline} />
                     </IonFabButton>
                     <IonFabList side="top">
-                        <IonFabButton color="dark" routerLink="/registrar-producto">
-                            <IonIcon icon={add} />
+                        <IonFabButton color="dark" routerLink="/registrar-producto" title="Registrar Producto">
+                            <IonIcon icon={wine} />
                         </IonFabButton>
-                        <IonFabButton color="dark" routerLink="/ajustes-usuario">
+                        <IonFabButton color="dark" routerLink="/ajustes-usuario" title="Ajustes de usuario">
                             <IonIcon icon={personCircleOutline} />
+                        </IonFabButton>
+                        <IonFabButton color="dark" routerLink="/sales" title="Ventas">
+                            <IonIcon icon={cart} />
                         </IonFabButton>
                     </IonFabList>
                 </IonFab>
