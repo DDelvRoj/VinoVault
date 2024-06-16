@@ -15,8 +15,11 @@ personasRouter.get('/personas', authenticateToken, async (req:Request, res:Respo
     const usuarioService:UsuarioService = new UsuarioService(conexion);
     try {
         await conexion.conectar();
-        const resultado = (await usuarioService.listarUsuario());
-        console.log(resultado);
+        
+        const resultado = (await usuarioService.listarUsuario()).map(usuario=>{
+          usuario.clave = usuario.pseudoclave = usuario.nombre = undefined;
+          return usuario;
+        });
         
         await conexion.desconectar();
         res.status(201).json(resultado)
