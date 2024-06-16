@@ -1,5 +1,5 @@
 import { IonAlert, IonBadge, IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonFabList, IonGrid, IonHeader, IonIcon, IonInfiniteScroll, IonInfiniteScrollContent, IonNote, IonPage, IonRefresher, IonRefresherContent, IonRow, IonSearchbar, IonTitle, IonToolbar, RefresherEventDetail } from "@ionic/react";
-import { add, cart, exit, heart, personCircleOutline, searchOutline, settingsOutline } from "ionicons/icons";
+import { add, addOutline, cart, cashOutline, exit, heart, personCircleOutline, searchOutline, settingsOutline } from "ionicons/icons";
 import { useEffect, useRef, useState } from "react";
 import ProductCard from "../components/ProductCard.tsx";
 import { CartStore } from "../data/CartStore.ts";
@@ -118,11 +118,14 @@ const Home : React.FC = () => {
                         <IonIcon icon={settingsOutline} />
                     </IonFabButton> 
                     <IonFabList side="top">
-                        <IonFabButton color="dark" routerLink="/registrar-producto">
-                            <IonIcon icon={add} />
+                        <IonFabButton color="dark" routerLink="/registrar-producto" title="Registrar Productos">
+                            <IonIcon icon={addOutline} />
                         </IonFabButton>
-                        <IonFabButton color="dark" routerLink="/ajustes-usuario">
+                        <IonFabButton color="dark" routerLink="/ajustes-usuario" title="Ajustes de Usuario">
                             <IonIcon icon={personCircleOutline} />
+                        </IonFabButton>
+                        <IonFabButton color="dark" routerLink="/ventas" title="Ventas">
+                            <IonIcon icon={cashOutline} />
                         </IonFabButton>
                     </IonFabList>
                 </IonFab>
