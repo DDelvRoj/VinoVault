@@ -7,16 +7,16 @@ import  "./ProductCard.css";
 import React from "react";
 import { Producto } from "../data/types.ts";
 
-
 interface ProductCardProps{
     product: Producto; 
     index?: any; 
-    cartRef?: any
+    cartRef?: any;
+    editarProducto: Function;
 }
 
 const ProductCard : React.FC<ProductCardProps> = (props) => {
 
-    const { product, index, cartRef } = props;
+    const { product, index, cartRef, editarProducto } = props;
     const favourites = FavouritesStore.useState(s => s.product_ids);
 
     const productCartRef = useRef<HTMLIonIconElement>(null);
@@ -73,8 +73,8 @@ const ProductCard : React.FC<ProductCardProps> = (props) => {
                 <IonCardHeader className="productCardHeader">
                     <div className="productCardActions">
                         <IonIcon className="productCardAction" color={isFavourite ? "danger" : "medium"} icon={isFavourite ? heart : heartOutline} onClick={(e) => addProductToFavourites(e, product.id_producto)}/>
-                        <IonIcon ref={ productFavouriteRef } style={{ position: "absolute", display: "none" }} className="productCardAction" color="danger" icon={ heart } />
-                        <IonIcon className="productCardAction" size="medium" icon={createOutline} />
+                        <IonIcon ref={ productFavouriteRef } style={{ position: "absolute", display: "none" }} className="productCardAction" color="danger" icon={ heart }  />
+                        <IonIcon className="productCardAction" size="medium" icon={createOutline} onClick={(e)=>editarProducto(e, product)}/>
                     </div>
                     <img src={(product?.imagen??"img-no-encontrado.png") } alt="product pic" />
                     <p className="ion-text-wrap">{ product.nombre_producto }</p>
