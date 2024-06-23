@@ -7,7 +7,13 @@ interface ProductStoreState{
 }
 
 
-
 export const ProductStore = new Store<ProductStoreState>({
   products: (JSON.parse(localStorage.getItem('productos')??'[]') as Producto[]) 
 });
+
+export const vaciarProductStore = ()=>{
+  ProductStore.update(s=>{
+    s.products=[];
+    localStorage.removeItem('productos');
+  })
+}

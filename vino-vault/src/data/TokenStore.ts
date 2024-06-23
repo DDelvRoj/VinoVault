@@ -7,3 +7,10 @@ interface TokenStoreState {
 export const TokenStore = new Store<TokenStoreState>({
     token:localStorage.getItem('token')?.toString()
 });
+
+export const vaciarTokenStore = ()=>{
+    TokenStore.update(s=>{
+        s.token=null;
+        localStorage.removeItem('token');
+    })
+}
