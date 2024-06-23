@@ -9,3 +9,11 @@ export interface Producto {
   marca?:string,
   precio:number|0
 }
+
+export interface Persona {
+  id_usuario?:string,
+  usuario?: string,
+  pseudoclave?: string,
+  creado:boolean,
+  admin:boolean
+}
