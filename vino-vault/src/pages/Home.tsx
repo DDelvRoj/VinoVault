@@ -1,5 +1,5 @@
-import { IonAlert, IonBadge, IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonFabList, IonGrid, IonHeader, IonIcon, IonInfiniteScroll, IonInfiniteScrollContent, IonNote, IonPage, IonRefresher, IonRefresherContent, IonRow, IonSearchbar, IonTitle, IonToolbar, RefresherEventDetail } from "@ionic/react";
-import { add, addOutline, cart, cashOutline, exit, heart, personCircleOutline, searchOutline, settingsOutline } from "ionicons/icons";
+import { IonAlert, IonBadge, IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonFabList, IonGrid, IonHeader, IonIcon, IonInfiniteScroll, IonInfiniteScrollContent, IonInput, IonItem, IonLabel, IonModal, IonNote, IonPage, IonRefresher, IonRefresherContent, IonRow, IonSearchbar, IonTitle, IonToolbar, RefresherEventDetail } from "@ionic/react";
+import { add, addOutline, cart, cashOutline, closeOutline, exit, heart, personCircleOutline, searchOutline, settingsOutline } from "ionicons/icons";
 import { useEffect, useRef, useState } from "react";
 import ProductCard from "../components/ProductCard.tsx";
 import { CartStore } from "../data/CartStore.ts";
@@ -10,15 +10,19 @@ import React from "react";
 import { FavouritesStore } from "../data/FavouritesStore.ts";
 import { fetchData } from "../data/fetcher.ts";
 import { useAutenticacion } from "../contexts/AutenticacionContext.tsx";
+import AgregarProductoModal from "../components/AgregarProductoModal.tsx";
 
 const Home : React.FC = () => {
 
+    
     const cartRef = useRef<HTMLIonIconElement>(null);
     const products = ProductStore.useState(s=>s.products);
     const favoritos = FavouritesStore.useState(s=>s.product_ids);
     const shopCart = CartStore.useState(s => s.product_ids);
     const [ searchResults, setsearchResults ] = useState<Producto[]>([]);
     const [ amountLoaded, setAmountLoaded ] = useState(6);
+    const [mostrarEditar, setMostrarEditar] = useState(false);
+    const [productoEditar, setProductoEditar] = useState<Producto>({cantidad:0,precio:0});
     const {logout} = useAutenticacion();
 
 
@@ -49,6 +53,13 @@ const Home : React.FC = () => {
 		e.target.complete();
 	}
 
+    const editarProducto = (e: any, producto:Producto) =>{
+        e.preventDefault();
+        e.stopPropagation();
+        setProductoEditar(producto);
+        setMostrarEditar(!mostrarEditar);
+    }
+
     const search = async (e:React.KeyboardEvent<HTMLIonSearchbarElement>) => {
         const searchVal = e.currentTarget.value;
         if (searchVal !='' && searchVal && searchVal!=undefined) {
@@ -61,6 +72,14 @@ const Home : React.FC = () => {
         }
     }
 
+    const handleProducto = (campo: keyof Producto, value:any) => {
+        setProductoEditar({ ...productoEditar, [campo]: value});
+    };
+
+    const handleEditar = async () =>{
+
+        setMostrarEditar(!mostrarEditar);
+    }
     return (
 
         <IonPage id="category-page" className="categoryPage">
@@ -92,6 +111,7 @@ const Home : React.FC = () => {
                     </IonRefresherContent>
                 </IonRefresher>
                 <IonSearchbar className="search" onKeyUp={ search } placeholder="Intenta con 'Vino'" searchIcon={ searchOutline } animated={ true } />
+                
                 <IonGrid>
                     <IonRow className="ion-text-center">
                         <IonCol size="12">
@@ -102,7 +122,7 @@ const Home : React.FC = () => {
                         { searchResults && searchResults.map((product, index) => {
                             if ((index <= amountLoaded)) {
                                 return (
-                                    <ProductCard key={ `producto_${ index }`} product={ product } index={ index } cartRef={ cartRef }  />
+                                    <ProductCard key={ `producto_${ index }`} product={ product } index={ index } cartRef={ cartRef } editarProducto={editarProducto}  />
                                 );
                             }
                             return null;
@@ -136,6 +156,8 @@ const Home : React.FC = () => {
                 {text:'No', role:"cancel"}
             ]}
             />
+            <AgregarProductoModal handleProducto={handleProducto} mostrarEditar={mostrarEditar} productoEditar={productoEditar} setMostrarEditar={setMostrarEditar}
+            setProductoEditar={setProductoEditar}/>
         </IonPage>
     );
 }
