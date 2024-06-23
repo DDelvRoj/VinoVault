@@ -1,5 +1,6 @@
-import { ProductStore } from "./ProductStore.ts";
-import { Producto } from "./types.ts";
+import { ProductStore, vaciarProductStore } from "./ProductStore.ts";
+import { vaciarTokenStore } from "./TokenStore.ts";
+import { Persona, Producto } from "./types.ts";
 
 const link:string = 'http://localhost:3000'
 
@@ -51,8 +52,18 @@ const apiFetch = async <T>(
 
   try {
     const response = await fetch(url, config);
+    
     if (!response.ok) {
       const errorMessage = `Error: ${response.statusText}`;
+      switch(response.status){
+        case 401:
+          vaciarTokenStore();
+          break;
+        default:
+          vaciarTokenStore();
+          vaciarProductStore();
+          break;
+      }
       throw new Error(errorMessage);
     }
     return (await response.json()) as T;
@@ -76,7 +87,7 @@ export const fetchLogin = async (username:string, password:string) => {
 };
 
 export const fetchPersonas = async () => { 
-  return apiFetch('personas','GET', await authHeader());
+  return apiFetch<Persona[]>('personas','GET', await authHeader());
 };
 
 const fetchProductos = async () => {
