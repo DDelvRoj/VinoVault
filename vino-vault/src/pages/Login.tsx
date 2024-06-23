@@ -15,7 +15,7 @@ const Login: React.FC = () => {
     const history = useHistory();
     useEffect(()=>{
         if(token){
-            history.push("/");
+            history.push('/');
         }
     },[token])
 
