@@ -6,7 +6,7 @@ import { guardarImagen } from "../util/imagenesUtil";
 
 
 const browser = puppeteer.launch({
-    headless:false,
+    headless:true,
     'args' : [
         '--no-sandbox',
         '--disable-setuid-sandbox'
