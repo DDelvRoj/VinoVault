@@ -3,29 +3,21 @@ import cors from 'cors';
 import loginRouter from './controller/loginController';
 import productosRouter from './controller/productosController';
 import personasRouter from './controller/personasController';
+import validarDispositivos from './middleware/dispositivosPermitidosMiddleware';
 
 const app = express();
 const PORT: number = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
-// Lista de orígenes permitidos
-const allowedOrigins = ['http://localhost:8100'];
 
-// Opciones de configuración de CORS
-const corsOptions: cors.CorsOptions = {
-  origin: function (origin, callback) {
-    console.log(origin);
-    
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  }
-};
+
+app.use(express.json());
 
 // Habilitar CORS con las opciones configuradas
-app.use(cors(corsOptions));
-app.use(express.json());
+app.use(cors({origin:'*'}));
+
+app.use(validarDispositivos);
+
+
 
 app.use(loginRouter);
 app.use(personasRouter)
