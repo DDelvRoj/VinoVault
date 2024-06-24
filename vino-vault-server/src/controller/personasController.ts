@@ -29,8 +29,25 @@ personasRouter.get('/personas', authenticateToken, async (req:Request, res:Respo
         console.log(error);
         res.status(500).json({error:`Error al realizar la carga de productos: ${error}`})
     }
-})
+});
 
+personasRouter.delete('/personas/:id', authenticateToken, async (req:Request, res:Response)=> {
+  const conexion:ConexionDataBase = getConexionCargada(req);
+  console.log("Tamo aqui",req.params['id']);
+  
+  try {
+    const usuarioService = await new UsuarioService(conexion);
+    await conexion.conectar();
+    const usuarioConSoloID = new Usuario({id_usuario:req.params['id']});
+    await usuarioService.borrarUsuario(usuarioConSoloID);
+    res.status(204).json({msj:`Usuario eliminado con éxito.`})
+  } catch (err) {
+    console.error('Error al borrar usuario en Cassandra', err);
+    res.status(500).json({ error: `Error al borrar usuario en Cassandra: ${err}` });
+  } finally {
+    await conexion.desconectar();
+  }
+});
 
 personasRouter.put('/personas',authenticateToken , async (req: Request, res: Response) => {
   const conexion: ConexionDataBase = getConexionCargada(req);
@@ -75,6 +92,6 @@ personasRouter.put('/personas',authenticateToken , async (req: Request, res: Res
     await conexion.desconectar();
   }
   
-}
-);
+});
+
 export default personasRouter;
