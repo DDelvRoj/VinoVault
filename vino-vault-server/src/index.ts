@@ -7,7 +7,24 @@ import personasRouter from './controller/personasController';
 const app = express();
 const PORT: number = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
-app.use(cors());
+// Lista de orígenes permitidos
+const allowedOrigins = ['http://localhost:8100'];
+
+// Opciones de configuración de CORS
+const corsOptions: cors.CorsOptions = {
+  origin: function (origin, callback) {
+    console.log(origin);
+    
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+};
+
+// Habilitar CORS con las opciones configuradas
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use(loginRouter);
