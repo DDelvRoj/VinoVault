@@ -1,9 +1,8 @@
+import { CapacitorHttp } from "@capacitor/core";
 import { ProductStore } from "./ProductStore.ts";
 import { vaciarTokenStore } from "./TokenStore.ts";
 import { Persona, Producto } from "./types.ts";
-
-const link:string = 'http://localhost:3000'
-
+const link:string = 'http://localhost:3000';
 
 export const fetchData = async () =>{
   const products:Producto[] = (await fetchProductos()).map(p=>{
@@ -25,18 +24,19 @@ export const fetchData = async () =>{
 
 interface FetchConfig {
   method: string;
-  headers: HeadersInit;
-  body?: string;
+  headers: { [key: string]: string };
+  data?: any;
 }
 
 const apiFetch = async <T>(
   ruta: string,
   method: 'GET' | 'POST' | 'PUT' | 'DELETE',
-  headers?: HeadersInit,
-  body?: Record<string, any>
+  headers?: { [key: string]: string },
+  data?: any
 ): Promise<T> => {
   const url = `${link}/${ruta}`;
-  const defaultHeaders: HeadersInit = {
+
+  const defaultHeaders: { [key: string]: string } = {
     'Content-Type': 'application/json',
     ...headers,
   };
@@ -44,17 +44,19 @@ const apiFetch = async <T>(
   const config: FetchConfig = {
     method: method,
     headers: defaultHeaders,
+    data: data
   };
 
-  if (body) {
-    config.body = JSON.stringify(body);
-  }
-
   try {
-    const response = await fetch(url, config);
-    
-    if (!response.ok) {
-      const errorMessage = `Error: ${response.statusText}`;
+    const response = await CapacitorHttp.request({
+      method: config.method,
+      url: url,
+      headers: config.headers,
+      data: config.data
+    });
+
+    if (!response || response.status >= 400) {
+      const errorMessage = `Error: ${response.status}`;
       switch(response.status){
         case 401:
           vaciarTokenStore();
@@ -62,19 +64,20 @@ const apiFetch = async <T>(
       }
       throw new Error(errorMessage);
     }
-    return (await response.json()) as T;
+
+    return response.data as T;
   } catch (error) {
     console.error('Fetch error:', error);
     throw error;
   }
 };
 
-const authHeader = async ()=>{
+const authHeader = async () =>{
   const token = localStorage.getItem('token');
-  const authHeader:HeadersInit = {
+  const authHeader = {
     'Authorization':`Bearer ${token}`
-  }
-  return authHeader
+  };
+  return authHeader;
 }
 
 export const fetchLogin = async (username:string, password:string) => {
@@ -95,5 +98,5 @@ const fetchProductos = async () => {
 };
 
 export const fetchProductById = async (id:string) => {
-  return apiFetch<Producto>( `/${id}`,'GET', await authHeader());
+  return apiFetch<Producto>(`/${id}`,'GET', await authHeader());
 };
