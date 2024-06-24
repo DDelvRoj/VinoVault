@@ -1,4 +1,4 @@
-import { ProductStore, vaciarProductStore } from "./ProductStore.ts";
+import { ProductStore } from "./ProductStore.ts";
 import { vaciarTokenStore } from "./TokenStore.ts";
 import { Persona, Producto } from "./types.ts";
 
@@ -59,10 +59,6 @@ const apiFetch = async <T>(
         case 401:
           vaciarTokenStore();
           break;
-        default:
-          vaciarTokenStore();
-          vaciarProductStore();
-          break;
       }
       throw new Error(errorMessage);
     }
@@ -85,6 +81,10 @@ export const fetchLogin = async (username:string, password:string) => {
   const body = { username, password };
   return apiFetch<any>('login', 'POST', undefined, body);
 };
+
+export const fetchPersonasBorrar = async (id:string) =>{
+  return apiFetch<any>(`personas/${id}`,'DELETE', await authHeader());
+}
 
 export const fetchPersonas = async () => { 
   return apiFetch<Persona[]>('personas','GET', await authHeader());
