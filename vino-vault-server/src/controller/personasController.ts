@@ -49,7 +49,7 @@ personasRouter.delete('/personas/:id', authenticateToken, async (req:Request, re
   }
 });
 
-personasRouter.put('/personas',authenticateToken , async (req: Request, res: Response) => {
+personasRouter.post('/personas',authenticateToken , async (req: Request, res: Response) => {
   const conexion: ConexionDataBase = getConexionCargada(req);
   const usuarioNuevo:UsuarioType = req.body;
   console.log(usuarioNuevo);
@@ -93,5 +93,7 @@ personasRouter.put('/personas',authenticateToken , async (req: Request, res: Res
   }
   
 });
+
+personasRouter
 
 export default personasRouter;
