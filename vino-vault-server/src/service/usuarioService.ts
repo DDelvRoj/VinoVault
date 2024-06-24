@@ -57,9 +57,12 @@ export class UsuarioService {
 
     @manejarErrores
     async borrarUsuario(usuarioDel:Usuario){
-        const usuarioConDataABorrar = await this.buscarUsuario(usuarioDel);
-        await this.queryExecuter.comandosCustoms(usuarioConDataABorrar, 'borrar', transformarTexto)
         await this.queryExecuter.eliminar(usuarioDel);
+    }
+
+    @manejarErrores
+    async borrarCuentaUsuario(usuarioDel:Usuario){
+        await this.queryExecuter.comandosCustoms(usuarioDel, 'borrar', transformarTexto)
     }
 
     @manejarErrores
