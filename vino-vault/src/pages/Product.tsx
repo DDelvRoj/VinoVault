@@ -1,5 +1,5 @@
-import { IonBadge, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonPage, IonRow, IonText, IonTitle, IonToolbar } from "@ionic/react";
-import {  arrowRedoOutline, cart, cartOutline, chevronBackOutline, heart, heartOutline } from "ionicons/icons";
+import { IonBadge, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonPage, IonRow, IonText, IonTitle, IonToolbar, useIonToast } from "@ionic/react";
+import {   cart, cartOutline, chevronBackOutline, heart, heartOutline } from "ionicons/icons";
 import { useEffect, useRef, useState } from "react";
 import ProductCard from "../components/ProductCard.tsx";
 import { addToCart, CartStore } from "../data/CartStore.ts";
@@ -19,6 +19,8 @@ const Product : React.FC = () => {
     const products = ProductStore.useState(s => s.products);
     const favourites = FavouritesStore.useState(s => s.product_ids);
     const [ isFavourite, setIsFavourite ] = useState(false);
+    const productoEnCompra = CartStore.useState(s=>s.product_ids.filter(id=>id===product.id_producto).length);
+    const [logs] = useIonToast();
     const shopCart = CartStore.useState(s => s.product_ids);
     const [ product, setProduct ] = useState<Producto>({cantidad:0, precio:0});
 
@@ -96,7 +98,6 @@ const Product : React.FC = () => {
                                     <div className="productCardActions">
                                         <IonIcon className="productCardAction"  color={ isFavourite ? "danger" : "medium" } icon={ isFavourite ? heart : heartOutline } onClick={ e => addProductToFavourites(e,(product?.id_producto ?? "")) } />
                                         <IonIcon style={{ position: "absolute", display: "none" }} id={ `lugar_producto_favorito_${ params.id }` } className="productCardAction  animate__animated" color="danger" icon={ heart } />
-                                        <IonIcon className="productCardAction" size="medium" icon={ arrowRedoOutline } />
                                     </div>
                                     <IonText color="dark" style={{maxWeight:'250px'}}><h3 className="ion-text-wrap"><b>{ product.nombre_producto }</b></h3></IonText>
                                     <img className="productImage" src={ product?.imagen??"img-no-encontrado.png"} alt="product pic" />
@@ -111,15 +112,29 @@ const Product : React.FC = () => {
                                 <IonCardContent className="categoryCardContent">
                                     
                                     <div className="productPrice">
-                                        <IonButton color="light" size="large">
-                                            { product.precio?.toLocaleString('es-ES').concat(' ₲') }
-                                        </IonButton>
-                                        <IonButton size="large" color="dark" onClick={ e => addProductToCart(e,
-                                            (product?.id_producto??"")) }>
-                                            <IonIcon icon={ cartOutline } />&nbsp;&nbsp;Agregar al Carrito
-                                        </IonButton>
+                                    <IonButton className="auto-width-button" color="light" >
+                                { product.precio?.toLocaleString('es-ES').concat(' ₲') }
+                            </IonButton>
+                            
+                            {
+                            product.cantidad && product.cantidad - productoEnCompra > 0 && (
+                                <>
+                                    <IonButton className="auto-width-button" color="dark" onClick={e => addProductToCart(e, params.id)} >
+                                        <IonIcon ref={cartRef} icon={cartOutline}/>&nbsp;&nbsp;Agregar al Carrito
+                                    </IonButton>
+                                    <IonIcon ref={cartRef} icon={ cart } color="dark" style={{ position: "absolute", display: "none", fontSize: "3rem" }}/>
+                                </>
+                                )
+                            }
+                            {product.cantidad && (
+                                <IonButton className="auto-width-button" color={product.cantidad - productoEnCompra>1?'tertiary':'danger'}>
+                                    {product.cantidad - productoEnCompra } restantes
+                                </IonButton>
+                            )
+                            }
 
                                         <IonIcon icon={ cart } color="dark" style={{ position: "absolute", display: "none", fontSize: "3rem" }} id={ `lugar_carrito_${ product.id_producto }` } className="animate__animated" />
+                                            
                                     </div>
                                 </IonCardContent>
                             </IonCard>
@@ -128,7 +143,7 @@ const Product : React.FC = () => {
 
                         <IonRow className="ion-text-center">
                             <IonCol size="12">
-                                <IonCardSubtitle>Similar products...</IonCardSubtitle>
+                                <IonCardSubtitle>Más Productos...</IonCardSubtitle>
                             </IonCol>
                         </IonRow>
 
@@ -139,7 +154,9 @@ const Product : React.FC = () => {
 
                                     return (
 
-                                        <ProductCard key={ `similar_product_${ index }`} product={ otro } index={ index }  cartRef={ cartRef }/>
+                                        <ProductCard key={`similar_product_${index}`} product={otro} index={index} cartRef={cartRef} editarProducto={()=>{
+                                            logs(`Vaya a la página principal para editar ${product.nombre_producto}`, 3000);
+                                        }}/>
                                     );
                                 }
                                 return null;
