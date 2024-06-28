@@ -1,7 +1,7 @@
-import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCol, IonIcon } from "@ionic/react";
+import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCol, IonIcon, IonRow } from "@ionic/react";
 import { cart, cartOutline, createOutline, heart, heartOutline } from "ionicons/icons";
 import { MouseEvent, useEffect, useRef, useState } from "react";
-import { addToCart } from "../data/CartStore.ts";
+import { addToCart, CartStore } from "../data/CartStore.ts";
 import { addToFavourites, FavouritesStore } from "../data/FavouritesStore.ts";
 import  "./ProductCard.css";
 import React from "react";
@@ -18,7 +18,7 @@ const ProductCard : React.FC<ProductCardProps> = (props) => {
 
     const { product, index, cartRef, editarProducto } = props;
     const favourites = FavouritesStore.useState(s => s.product_ids);
-
+    const productoEnCompra = CartStore.useState(s=>s.product_ids.filter(id=>id===product.id_producto).length);
     const productCartRef = useRef<HTMLIonIconElement>(null);
     const productFavouriteRef = useRef<HTMLIonIconElement>(null);
     const [ isFavourite, setIsFavourite ] = useState(false);
@@ -81,13 +81,29 @@ const ProductCard : React.FC<ProductCardProps> = (props) => {
                 </IonCardHeader>
                 <IonCardContent className="categoryCardContent" >
                     <div className="productPrice">
-                        <IonButton style={{ width: "100%" }} color="light" >
-                            { product.precio?.toLocaleString('es-ES').concat(' ₲') }
-                        </IonButton>
-                        <IonButton color="dark" onClick={e => addProductToCart(e, product.id_producto)} >
-                            <IonIcon ref={cartRef} icon={cartOutline}  />
-                        </IonButton>
-                        <IonIcon ref={productCartRef} icon={ cart } color="dark" style={{ position: "absolute", display: "none", fontSize: "3rem" }}/>
+                        <IonRow>
+                            <IonButton className="auto-width-button" color="light" >
+                                { product.precio?.toLocaleString('es-ES').concat(' ₲') }
+                            </IonButton>
+                            
+                            {
+                            product.cantidad && product.cantidad - productoEnCompra > 0 && (
+                                <>
+                                    <IonButton className="auto-width-button" color="dark" onClick={e => addProductToCart(e, product.id_producto)} >
+                                        <IonIcon ref={cartRef} icon={cartOutline}  />
+                                    </IonButton>
+                                    <IonIcon ref={productCartRef} icon={ cart } color="dark" style={{ position: "absolute", display: "none", fontSize: "3rem" }}/>
+                                </>
+                                )
+                            }
+                            {product.cantidad && (
+                                <IonButton className="auto-width-button" color={product.cantidad - productoEnCompra>1?'tertiary':'danger'}>
+                                    {product.cantidad - productoEnCompra } restantes
+                                </IonButton>
+                            )
+                            }
+                        </IonRow>
+                        
                     </div>
                 </IonCardContent>
             </IonCard>
