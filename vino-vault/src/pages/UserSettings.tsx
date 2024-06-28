@@ -1,57 +1,68 @@
-import { IonButton, IonContent, IonHeader, IonPage, IonToolbar, IonTitle, IonList, IonItem, IonLabel, IonGrid, IonRow, IonCol, IonToggle, IonButtons, IonIcon, IonItemSliding, IonItemOptions, IonItemOption, IonFooter, IonFab, IonFabButton, IonAlert, useIonToast, useIonAlert } from "@ionic/react";
+import { IonButton, IonContent, IonHeader, IonPage, IonToolbar, IonTitle, IonList, IonItem, IonLabel, IonGrid, IonRow, IonCol, IonToggle, IonButtons, IonIcon, IonItemSliding, IonItemOptions, IonItemOption, IonFooter, IonFab, IonFabButton, IonAlert, useIonToast, useIonAlert, useIonModal } from "@ionic/react";
 import { addOutline, chevronBackOutline, closeOutline, createOutline, sendOutline, trashOutline } from "ionicons/icons";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import './CartProducts.css'
-import { fetchPersonas } from "../data/fetcher";
+import { fetchPersonas, fetchPersonasAgregar, fetchPersonasBorrar, fetchPersonasModificar } from "../data/fetcher";
 import { PersonasStore } from "../data/PersonasStore";
 import { Persona } from "../data/types";
-import GestionarUsuarioModal from "../components/GestionarUsuarioModal";
+import GestionarUsuarioModal, { GestionarUsuarioModalProps } from "../components/GestionarUsuarioModal";
+import { SesionStore } from "../data/SesionStore";
 
 const UserSettings: React.FC = () => {
-    
+    const miID = SesionStore.useState(s=>s.miSesion);
     const personas = PersonasStore.useState(s=>s.personas);
     const [personaList, setPersonaList] = useState<Persona[]>([]);
-    const [personaEditar, setPersonaEditar] = useState<Persona>({admin:false, creado:false})
+    const [personaEditar, setPersonaEditar] = useState<Persona>({admin:false})
     const [personasActualizar, setPersonasActualizar] = useState<Persona[]>([]);
-    const [mostrarEditar, setMostrarEditar] = useState(false);
     const [logs] = useIonToast();
     const [alert] = useIonAlert();
+    const [accionTitle, setAccionTitle] = useState<"Editar"|"Agregar">('Editar');
+    const accionRef = useRef<(persona:Persona)=>void>();
+    const listaRef = useRef<{[key:string]:HTMLIonItemSlidingElement}>({})
+    const [mostrar, cerrar] = useIonModal(GestionarUsuarioModal,
+        {
+            dismiss: ()=>cerrar(),
+            accionTitle: accionTitle,
+            valorInicial: personaEditar,
+            handleAceptar: (persona:Persona) => accionRef.current && accionRef.current(persona)
+        } as GestionarUsuarioModalProps
+    );
+
+    
+    useEffect(()=>{
+        cargarPersonas()
+    }, []);
 
     useEffect(()=>{
-        if(!(personas.length>0)){
-            fetchPersonas().then(res=>{
-                if(res.length>0){
-                    PersonasStore.update(s=>{
-                        s.personas = res;
-                    })
-                }
-            });
-        }
-    }, [])
+        setPersonaList(personas.filter(p=>p.id_usuario!==miID.id_usuario));
+    },[personas, miID]);
 
-    useEffect(()=>{
-        setPersonaList(personas);
-    },[personas]);
-
-    useEffect(()=>{
-        const personasActNew:Persona[]=[];
-        personas.forEach((p,i)=>{
-            const personaRes = personaList[i];
-            const esIgual = JSON.stringify(p) === JSON.stringify(personaRes);
-            if(!esIgual){
-                personasActNew.push(personaRes);
+    const cargarPersonas = async () => {
+        await fetchPersonas().then(res=>{
+            if(res.length>0){
+                PersonasStore.update(s=>{
+                    s.personas = res;
+                });
             }
         });
-        setPersonasActualizar(personasActNew);
-        
-    },[personaList])
+    }
+
+    const cerrarItem = (id:string) => {
+        if(listaRef.current && listaRef.current[id]){
+            listaRef.current[id]?.closeOpened();
+        }
+    }
 
     const handleDeleteUser = (persona: Persona) => {
+        cerrarItem(persona.id_usuario??'');
         alert(`¿Borrar al Usuario ${persona.usuario}?`,
             [
                 {
-                    text:'Si', handler:()=>{
-                        logs('Borrao',3000)
+                    text:'Si', handler: async ()=>{
+                        if(persona.id_usuario){
+                            await fetchPersonasBorrar(persona.id_usuario);
+                            await cargarPersonas();
+                        }
                     }
                 },
                 {
@@ -62,24 +73,91 @@ const UserSettings: React.FC = () => {
         );
     };
 
+    const handlePersonaAgregar = ()=>{
+        setPersonaEditar({admin:false});
+        const agregarPersona = async (persona:Persona) => {
+            await fetchPersonasAgregar(persona).then(res=>{
+                console.log(res.msj);
+                cargarPersonas();
+                logs(res.msj,3000);
+            }).catch((err)=>{
+                console.log(err);
+                
+                logs(err, 3000);
+            })
+        }
+        accionRef.current = agregarPersona;
+        setAccionTitle("Agregar");
+        mostrarModal();
+
+
+    }
     
     const handlePersonaEditar = (persona:Persona)=>{
-        
+        cerrarItem(persona.id_usuario??'');
         setPersonaEditar(persona);
-        setMostrarEditar(true);
+        const agregarPersona = (persona:Persona)=>{
+            const nuevaListaActualizar = [...personasActualizar];
+            const indicePersonaSiExiste = nuevaListaActualizar.findIndex(p=>p.id_usuario===persona.id_usuario);
+            if(indicePersonaSiExiste>-1){
+                nuevaListaActualizar[indicePersonaSiExiste] = persona;
+            } else {
+                nuevaListaActualizar.push(persona);
+            }
+            const nuevaLista = [...personaList];
+            nuevaListaActualizar.forEach((p)=>{
+                nuevaLista[personaList.findIndex(pc=>pc.id_usuario===p.id_usuario)]=p;
+            })
+            setPersonasActualizar(nuevaListaActualizar);
+            setPersonaList(nuevaLista);
+        }
+        setAccionTitle("Editar");
+        accionRef.current = agregarPersona;
+        logs('Campo Usuario o Contraseña puede dejarse vacío si no requiere cambios.',3000);
+        mostrarModal();
     }
 
-    const handleEditarModal = (persona:Persona) => {
-        const personaActual = personaList.filter(p=>p.id_usuario===persona.id_usuario)[0];
-        if(JSON.stringify(personaActual)!==JSON.stringify(persona)){
-            setPersonasActualizar([...personasActualizar, persona]);
-        } else {
-            logs("No hubo ningún cambio.",3000);
-        }
+    const mostrarModal = () => {
+        mostrar({
+            onDidDismiss: ()=>{
+                setPersonaEditar({admin:false})
+            }
+        });
     }
-    const handleActualizar = ()=>{
-        console.log(personasActualizar);
-        
+
+    const handleActualizar = async ()=>{
+        personaList.forEach(async p => {
+            await fetchPersonasModificar(p).then((res)=>{
+                console.log(res);
+            }).catch(error=>{
+                console.log(error);
+            });
+        });
+        setPersonasActualizar([]);
+    }
+
+    const handleIntentarCancelar = () => {
+        alert(`¿Cancelar las actualizaciones?`,
+            [
+                {
+                    text:'Si', handler:()=>{
+                        setPersonasActualizar([]);
+                        setPersonaList(personas);
+                    }
+                },
+                {
+                    text:'No',
+                    role:'cancel'
+                }
+            ]
+        );
+    }
+
+    const handleIntentarActualizar = () => {
+        alert(`¿Está seguro de querer actualizar ${personaList.length} elemento/s?`,[
+            {text:'Si',handler:handleActualizar},
+            {text:'No', role:"cancel"}
+        ])
     }
 
     return (
@@ -109,10 +187,16 @@ const UserSettings: React.FC = () => {
                         </IonCol>
                     </IonRow>
                 </IonGrid>
-                <IonList>
-                    {personaList.map((user, index) => (
-                        <IonItemSliding key={index} className="cartSlider">
-                        <IonItem lines="none" detail={ false } className="cartItem ">
+                <IonList >
+                    {personaList.map((user) => (
+                        <IonItemSliding key={user.id_usuario} 
+                        ref={el => {
+                            if(el && user.id_usuario){
+                                listaRef.current[user.id_usuario] = el;
+                            }
+                        }}
+                        className="cartSlider">
+                        <IonItem lines="none" detail={ false } className="cartItem " >
                             <IonGrid className="ion-align-items-center ion-justify-content-center">
                                 <IonRow>
                                     <IonCol className="ion-margin-horizontal">
@@ -135,42 +219,26 @@ const UserSettings: React.FC = () => {
                     </IonItemSliding>
                     ))}
                 </IonList>
-                <IonFab id="agregar" vertical="bottom" horizontal="end" slot="fixed">
-                    <IonFabButton color="dark">
-                        <IonIcon icon={addOutline} />
-                    </IonFabButton> 
+                <IonFab vertical="bottom" horizontal="end" slot="fixed" onClick={()=>handlePersonaAgregar()}>
+                    <IonFabButton color="dark"><IonIcon icon={addOutline}/></IonFabButton>
                 </IonFab>
-                <GestionarUsuarioModal isOpen={mostrarEditar} accionTitle="Editar Persona" valorInicial={personaEditar} handleAceptar={handleEditarModal} onDidDismiss={()=>setMostrarEditar(false)} dismiss={()=>setMostrarEditar(false)}/>
+                
             </IonContent>
             <IonFooter className="cartFooter">
                 ({personasActualizar.length>0 && (
                     <div className="cartCheckout">
                     <IonRow>
                         <IonCol>
-                            <IonButton id="actualizar" color="dark" >
+                            <IonButton  color="dark" onClick={()=>handleIntentarActualizar()} >
                                 <IonIcon icon={ sendOutline } />&nbsp;Aceptar cambios ({personasActualizar.length})
                             </IonButton>
                         </IonCol>
                         <IonCol>
-                            <IonButton id="cancelar" color="danger" >
+                            <IonButton color="danger" onClick={() => handleIntentarCancelar()}>
                                 <IonIcon icon={ closeOutline } />&nbsp;Cancelar cambios
                             </IonButton>
                         </IonCol>
                     </IonRow>
-                    <IonAlert trigger="actualizar" header="Actualizar Usuarios"
-                    subHeader="¿Realmente desea actualizar a los usuarios?"
-                    buttons={[
-                        {text:'Si',handler:handleActualizar},
-                        {text:'No', role:"cancel"}
-                    ]}
-                    />
-                    <IonAlert trigger="cancelar" header="Cancelar cambios en Usuarios"
-                    subHeader="¿Realmente desea cancelar los cambios a los usuarios?"
-                    buttons={[
-                        {text:'Si',handler:()=>{setPersonasActualizar([])}},
-                        {text:'No', role:"cancel"}
-                    ]}
-                    />
                 </div>
                 )})
 
