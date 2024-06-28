@@ -11,8 +11,6 @@ export const fetchData = async () =>{
     }
     return p;
   });
-
-  console.log(products);
   
   ProductStore.update(s=>{
     s.products = products;
@@ -85,6 +83,10 @@ export const fetchLogin = async (username:string, password:string) => {
   return apiFetch<any>('login', 'POST', undefined, body);
 };
 
+export const fetchMiSesion = async ()=>{
+  return apiFetch<any>('login','GET', await authHeader()); 
+}
+
 export const fetchPersonasBorrar = async (id:string) =>{
   return apiFetch<any>(`personas/${id}`,'DELETE', await authHeader());
 }
@@ -93,10 +95,28 @@ export const fetchPersonas = async () => {
   return apiFetch<Persona[]>('personas','GET', await authHeader());
 };
 
+export const fetchPersonasAgregar = async (persona:Persona) =>{
+  return apiFetch<any>('personas','POST', await authHeader(), persona);
+}
+
+export const fetchPersonasModificar = async (persona:Persona) =>{
+  return apiFetch<any>('personas','PUT', await authHeader(), persona);
+}
+
 const fetchProductos = async () => {
   return apiFetch<Producto[]>('productos/listar/todos','GET', await authHeader());
 };
 
+export const fetchProductoAgregar = async (producto:Producto) => {
+  return apiFetch<any>(`productos`,'POST', await authHeader(), producto);
+}
+export const fetchProductoModificar = async (producto:Producto) => {
+  return apiFetch<any>('productos', "PUT", await authHeader(), producto);
+}
+export const fetchProductoCodigoBarra = async (producto:Producto) => {
+  return apiFetch<Producto>(`productos/codigo/${producto.ean}`,'GET', await authHeader());
+};
+
 export const fetchProductById = async (id:string) => {
-  return apiFetch<Producto>(`/${id}`,'GET', await authHeader());
+  return apiFetch<Producto>(`productos/${id}`,'GET', await authHeader());
 };

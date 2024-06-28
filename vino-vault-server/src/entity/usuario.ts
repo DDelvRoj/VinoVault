@@ -92,3 +92,8 @@ export class Usuario {
         }
     }   
 }
+
+const usuarioTest = new Usuario({id_usuario:'sdasdaadasd', usuario:'CHiChi', admin:false, pseudoclave:'chuucha'});
+console.log(usuarioTest['update']);
+console.log(usuarioTest['params']);
+

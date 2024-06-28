@@ -15,7 +15,7 @@ app.use(express.json());
 // Habilitar CORS con las opciones configuradas
 app.use(cors({origin:'*'}));
 
-app.use(validarDispositivos);
+//app.use(validarDispositivos);
 
 
 
