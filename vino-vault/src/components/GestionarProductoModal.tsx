@@ -91,10 +91,10 @@ const GestionarProductoModal: React.FC<GestionarProductoModalProps> = ({dismiss,
                                 <IonInput label="Descripción del Producto" labelPlacement="floating" value={producto.descripcion} onIonInput={(e: any) => handleProducto('descripcion', e.target.value)} />
                             </IonItem>
                             <IonItem>
-                                <IonInput label="Precio del Producto" labelPlacement="floating" required={true} type="number" value={producto.precio?.toString()} onIonInput={(e: any) => handleProducto('precio', parseInt(e.target.value, 10))} />
+                                <IonInput label="Precio del Producto" min='0' labelPlacement="floating" required={true} type="number" value={producto.precio?.toString()} onIonInput={(e: any) => handleProducto('precio', parseInt(e.target.value, 10))} />
                             </IonItem>
                             <IonItem>
-                                <IonInput label="Cantidad del Producto" labelPlacement="floating" required={true} type="number" value={producto.cantidad?.toString()} onIonInput={(e: any) => handleProducto('cantidad', parseInt(e.target.value, 10))} />
+                                <IonInput label="Cantidad del Producto" min='0' labelPlacement="floating" required={true} type="number" value={producto.cantidad?.toString()} onIonInput={(e: any) => handleProducto('cantidad', parseInt(e.target.value, 10))} />
                             </IonItem>
                             <IonItem>
                                 <IonLabel slot="floating">Imagen</IonLabel>
