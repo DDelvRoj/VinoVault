@@ -19,7 +19,7 @@ const Login: React.FC = () => {
         }
     },[token])
 
-    const handleLogin = async (event: any) => {
+    const handleLogin = async (event: React.FormEvent) => {
         event.preventDefault();
         setError(null);
         try {
@@ -59,24 +59,26 @@ const Login: React.FC = () => {
             </IonToolbar>
         </IonHeader>
         <IonContent>
-        <div className="login-wrapper">
-            
-            <div className="brand">
-               Login
+        <form onSubmit={handleLogin}>
+            <div className="login-wrapper">
+                
+                <div className="brand">
+                Login
+                </div>
+
+                <IonItem color="light">
+                <IonInput  value={usuario} placeholder="Usuario" required onIonInput={handleUsuario}></IonInput>
+                </IonItem>
+
+                <IonItem color="light">
+                <IonInput value={clave} placeholder="Clave" required type="password" onIonInput={handleClave}></IonInput>
+                </IonItem>
+                <IonButton expand="full" color="dark" type="submit" disabled={!camposCompletos} >
+                Iniciar Sesión
+                </IonButton>
+
             </div>
-
-            <IonItem>
-              <IonInput value={usuario} placeholder="Usuario" required onIonInput={handleUsuario}></IonInput>
-            </IonItem>
-
-            <IonItem>
-              <IonInput value={clave} placeholder="Clave" required type="password" onIonInput={handleClave}></IonInput>
-            </IonItem>
-            <IonButton expand="full" color="dark" onClick={handleLogin} disabled={!camposCompletos} >
-              Iniciar Sesión
-            </IonButton>
-
-        </div>
+        </form>
         {error && <IonAlert isOpen={true} header={'Error'} message={error} buttons={['OK']} />}
         </IonContent>
     </IonPage>
