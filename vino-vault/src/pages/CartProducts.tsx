@@ -1,22 +1,23 @@
-import { IonAlert, IonAvatar, IonBadge, IonButton, IonButtons, IonCardSubtitle, IonCol, IonContent, IonFooter, IonHeader, IonIcon, IonImg, IonItem, IonItemOption, IonItemOptions, IonItemSliding, IonLabel, IonList, IonNote, IonPage, IonRow, IonTitle, IonToolbar, useIonToast } from "@ionic/react";
+import { IonAvatar, IonBadge, IonButton, IonButtons, IonCardSubtitle, IonCol, IonContent, IonFooter, IonHeader, IonIcon, IonImg, IonItem, IonItemOption, IonItemOptions, IonItemSliding, IonLabel, IonList, IonNote, IonPage, IonRow, IonTitle, IonToolbar, useIonAlert, useIonToast } from "@ionic/react";
 import { add, checkmarkSharp, chevronBackOutline, remove, trashOutline } from "ionicons/icons";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CartStore, removeFromCart } from "../data/CartStore.ts";
 import { ProductStore } from "../data/ProductStore.ts";
 
 import  "./CartProducts.css";
 import { Producto } from "../data/types.ts";
 import React from "react";
+import { fetchProductosVender } from "../data/fetcher.ts";
 
 const CartProducts : React.FC = () => {
 
     const [ mostrar ] = useIonToast();
     const products = ProductStore.useState(s => s.products);
     const shopCart = CartStore.useState(s => s.product_ids);
-    const [mostrarAlert, setMostrarAlert] = useState(false);
-    const [idProductoReciente, setIdProductoReciente] = useState("");
     const [ cartProducts, setCartProducts ] = useState<Producto[]>([]);
     const [total, setTotal] = useState(0);
+    const listaRef = useRef<{[key:string]:HTMLIonItemSlidingElement}>({});
+    const [alert] = useIonAlert();
 
     useEffect(()=>{
         
@@ -28,10 +29,8 @@ const CartProducts : React.FC = () => {
                     precio: 0
                 };
                 const cantidadProducto = shopCart.filter(p=>prod.id_producto && prod.id_producto===p).length;
-                if(cantidadProducto>0){
+                if(cantidadProducto>0 && prod.cantidad){
                     const evaluar = cantidadProducto>prod.cantidad;
-                    console.log(`Marca ${prod.marca} cantidadComprar ${cantidadProducto} y cantidadStock ${prod.cantidad} = ${evaluar}`);
-                    
                     if(evaluar){
                         mostrar(`Tenés ${prod.cantidad} del producto "${prod.nombre_producto}" en stock, no se puede pasar de la cantidad, se necesita reposición.`
                             ,5000);
@@ -55,16 +54,21 @@ const CartProducts : React.FC = () => {
                 return producto;
             }).filter(p=>p.id_producto!=undefined);
             let suma = 0;
-            productosCarrito.forEach(p=>suma=suma+p.cantidad*p.precio);
+            productosCarrito.forEach(p=>suma=suma+(p.cantidad??0)*(p.precio??0));
             setCartProducts(productosCarrito);
             setTotal(suma);
         }
         getCarroProductos();
     },[shopCart])
 
+    const cerrarItem = (id:string) => {
+        if(listaRef.current && listaRef.current[id]){
+            listaRef.current[id]?.closeOpened();
+        }
+    }
+
     const reducirCantidadCarrito = (id:string)=>{
         let shopCartTemp = [...shopCart];
-        mostrar('Borrar',2000)
         const index = shopCartTemp.findIndex(p=>p===id);
         shopCartTemp.splice(index,1);
         CartStore.update(s=>
@@ -72,11 +76,39 @@ const CartProducts : React.FC = () => {
         )
     }
 
+    const borrarProductoCarrito = (id:string) => {
+        removeFromCart(id);
+        cerrarItem(id);
+    }
+
     const aumentarCantidadCarrito = (id:string)=>{
         CartStore.update(s=>
            { s.product_ids=[...shopCart,id]}
         )
     }
+
+    const handleVenta = async () => {
+        const dataAEnviar = cartProducts.map(p=>{
+            const nuevoProducto:Producto = {
+                id_producto:p.id_producto,
+                cantidad:p.cantidad
+            }
+            return nuevoProducto;
+        });
+        console.log(dataAEnviar);
+        
+        await fetchProductosVender(dataAEnviar).then((res)=>{
+            console.log('Exitooo', res);
+                setCartProducts([]);
+                CartStore.update(s=>{
+                    s.product_ids=[];
+                    s.total=0;
+            })
+        }).catch(err=>{
+            console.log(err);
+            
+        })
+     }
 
     return (
 
@@ -101,9 +133,14 @@ const CartProducts : React.FC = () => {
                     </IonRow>
                     <IonList>
                         { cartProducts && cartProducts.map((product, index) => {
-                            if ((index <= 6)) {
+                            if ((index <= 6) && product.precio && product.cantidad) {
                                 return (
-                                <IonItemSliding key={ index } className="cartSlider">
+                                <IonItemSliding key={ index } className="cartSlider"
+                                ref={el => {
+                                    if(el && product.id_producto){
+                                        listaRef.current[product.id_producto] = el;
+                                    }
+                                }}>
                                     <IonItem  lines="none" detail={ false } className="cartItem ">
                                         <IonAvatar>
                                             <IonImg src={(product?.imagen??"img-no-encontrado.png")} />
@@ -127,32 +164,35 @@ const CartProducts : React.FC = () => {
                                     <IonItemOptions side="end">
                                         <IonItemOption color="light" style={{ paddingLeft: "1rem", paddingRight: "1rem" }} onClick={()=>{
                                             const id = product?.id_producto ?? "";
-                                            setIdProductoReciente(id);
-                                            const cantidadProducto = cartProducts.filter(p=>p.id_producto===id)[0].cantidad;
+                                            const cantidadProducto = cartProducts.filter(p=>p.id_producto===id)[0].cantidad??0;
                                             if(cantidadProducto>1){
                                                 reducirCantidadCarrito(id);
-                                            }else{
-                                                setMostrarAlert(!mostrarAlert);
                                             }
-                                            }}>
+                                        }}>
                                             <IonIcon icon={remove}/>
                                         </IonItemOption>
                                         <IonItemOption color="success" style={{ paddingLeft: "1rem", paddingRight: "1rem" }} onClick={()=>{
                                             const id = product?.id_producto ?? "";
-                                            setIdProductoReciente(id);
                                             aumentarCantidadCarrito(id);
                                         }}>
                                             <IonIcon icon={add}/>
                                         </IonItemOption>
                                         <IonItemOption color="danger" style={{ paddingLeft: "1rem", paddingRight: "1rem" }} 
-                                            onClick={ () => {
-                                                const id = product?.id_producto ?? "";
-                                                setIdProductoReciente(id);
-                                                if(id!==""){
-                                                    setMostrarAlert(!mostrarAlert);
-                                                }
-                                            } 
-                                        }>
+                                            onClick={()=>{
+                                                alert('¿Borrar del Carrito el producto?',[
+                                                    {
+                                                        text:"Sí",
+                                                        handler:()=>{
+                                                            const id = product?.id_producto ?? "";
+                                                            borrarProductoCarrito(id);
+                                                        }
+                                                    },
+                                                    {
+                                                        text:"No",
+                                                        role:"cancel"
+                                                    }
+                                                ])
+                                            }}>
                                             <IonIcon icon={ trashOutline } />
                                         </IonItemOption>
                                     </IonItemOptions>
@@ -163,27 +203,29 @@ const CartProducts : React.FC = () => {
                         }).filter(o=>o!=null)}
                     </IonList>
             </IonContent>
-            <IonAlert isOpen={mostrarAlert} onDidDismiss={()=>setMostrarAlert(!mostrarAlert)}  header="¿Quitar del carrito el producto?"
-                message="Presione Sí para confirmar."
-                buttons={[
-                    {
-                        text:'Sí',
-                        role: 'confirm',
-                        handler:()=>removeFromCart(idProductoReciente)
-                    },
-                    {
-                        text:'No',
-                        role:'cancel'
-                    }
-                ]}
-            />
-            <IonFooter className="cartFooter">
-                <div className="cartCheckout">
-                    <IonCardSubtitle>{total.toLocaleString('es-ES').concat(' ₲')}</IonCardSubtitle>
-                    <IonButton color="dark">
-                        <IonIcon icon={ checkmarkSharp } />&nbsp;Aceptar y vender
-                    </IonButton>
-                </div>
+           
+            <IonFooter className="cartFooter" >
+                {
+                    (shopCart.length>0) && (
+                        <div className="cartCheckout">
+                            <IonCardSubtitle  >{total.toLocaleString('es-ES').concat(' ₲')}</IonCardSubtitle>
+                            <IonButton color="dark" onClick={async () => {
+                                alert('¿Vender productos?',[
+                                    {
+                                         text:"Sí",
+                                         handler: handleVenta
+                                    },
+                                    {
+                                        text:'No',
+                                        role: 'cancel'
+                                    }
+                                ])
+                            }}>
+                                <IonIcon  icon={ checkmarkSharp } />&nbsp;Aceptar y vender
+                            </IonButton>
+                        </div>
+                    )
+                }
             </IonFooter>
         </IonPage>
     );

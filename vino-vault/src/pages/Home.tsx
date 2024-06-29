@@ -37,7 +37,7 @@ const Home : React.FC = () => {
 
     useEffect(()=>{
         
-        if(!localStorage.getItem('productos')){
+        if(products.length===0){
             fetchData();
         }
     }, []);

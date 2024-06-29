@@ -19,7 +19,7 @@ const Product : React.FC = () => {
     const products = ProductStore.useState(s => s.products);
     const favourites = FavouritesStore.useState(s => s.product_ids);
     const [ isFavourite, setIsFavourite ] = useState(false);
-    const productoEnCompra = CartStore.useState(s=>s.product_ids.filter(id=>id===product.id_producto).length);
+    const productoEnCompra = CartStore.useState(s=>s.product_ids.filter(id=>id===params.id).length);
     const [logs] = useIonToast();
     const shopCart = CartStore.useState(s => s.product_ids);
     const [ product, setProduct ] = useState<Producto>({cantidad:0, precio:0});
@@ -113,28 +113,26 @@ const Product : React.FC = () => {
                                     
                                     <div className="productPrice">
                                     <IonButton className="auto-width-button" color="light" >
-                                { product.precio?.toLocaleString('es-ES').concat(' ₲') }
-                            </IonButton>
-                            
-                            {
-                            product.cantidad && product.cantidad - productoEnCompra > 0 && (
-                                <>
-                                    <IonButton className="auto-width-button" color="dark" onClick={e => addProductToCart(e, params.id)} >
-                                        <IonIcon ref={cartRef} icon={cartOutline}/>&nbsp;&nbsp;Agregar al Carrito
+                                    { product.precio?.toLocaleString('es-ES').concat(' ₲') }
                                     </IonButton>
-                                    <IonIcon ref={cartRef} icon={ cart } color="dark" style={{ position: "absolute", display: "none", fontSize: "3rem" }}/>
-                                </>
-                                )
-                            }
-                            {product.cantidad && (
-                                <IonButton className="auto-width-button" color={product.cantidad - productoEnCompra>1?'tertiary':'danger'}>
-                                    {product.cantidad - productoEnCompra } restantes
-                                </IonButton>
-                            )
-                            }
-
-                                        <IonIcon icon={ cart } color="dark" style={{ position: "absolute", display: "none", fontSize: "3rem" }} id={ `lugar_carrito_${ product.id_producto }` } className="animate__animated" />
-                                            
+                                        {
+                                            product.cantidad && product.cantidad - productoEnCompra > 0 ? (
+                                                <>
+                                                <IonButton className="auto-width-button" color="dark" onClick={e => addProductToCart(e, params.id)}>
+                                                    <IonIcon ref={cartRef} icon={cartOutline} />&nbsp;&nbsp;Agregar al Carrito
+                                                </IonButton>
+                                                <IonIcon ref={cartRef} icon={cart} color="dark" style={{ position: "absolute", display: "none", fontSize: "3rem" }} />
+                                                </>
+                                            ) : null
+                                        }
+                                        {
+                                            product.cantidad !== undefined && product.cantidad !== null ? (
+                                                <IonButton className="auto-width-button" color={product.cantidad - productoEnCompra > 1 ? 'tertiary' : 'danger'}>
+                                                {product.cantidad - productoEnCompra > 0 ? product.cantidad - productoEnCompra : 0} restantes
+                                                </IonButton>
+                                            ) : null
+                                        }
+                                        <IonIcon icon={ cart } color="dark" style={{ position: "absolute", display: "none", fontSize: "3rem" }} id={ `lugar_carrito_${ product.id_producto }` }/>     
                                     </div>
                                 </IonCardContent>
                             </IonCard>
