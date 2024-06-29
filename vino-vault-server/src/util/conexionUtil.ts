@@ -8,6 +8,6 @@ export const getConexionCargada = (req: Request): ConexionDataBase => {
   usuario.clave = transformarTexto(usuario.clave);
   usuario.usuario = transformarTexto(usuario.usuario);
   const conexion: ConexionDataBase = new ConexionDataBase({ username: usuario.usuario, password: usuario.clave });
-  console.log(usuario);
+  
   return conexion;
 };

@@ -2,8 +2,9 @@
 import React, { ReactNode, useEffect } from 'react';
 import { AutenticacionContext } from './AutenticacionContext';
 import { TokenStore } from '../data/TokenStore';
-import { fetchLogin} from '../data/fetcher';
+import { fetchLogin, fetchMiSesion} from '../data/fetcher';
 import { useIonToast } from '@ionic/react';
+import { SesionStore } from '../data/SesionStore';
 
 
 
@@ -14,6 +15,8 @@ interface AutenticacionProviderProps {
 export const AutenticacionProvider: React.FC<AutenticacionProviderProps> = ({ children }) => {
     const [ mostrar ] = useIonToast();
     const token = TokenStore.useState(s=>s.token);
+    const miID = SesionStore.useState(s=>s.miSesion.usuario);
+    const [toast] = useIonToast();
 
     const guardarToken = (token:string|null)=>{
         TokenStore.update(s=>{
@@ -25,7 +28,7 @@ export const AutenticacionProvider: React.FC<AutenticacionProviderProps> = ({ ch
             }
         })
     }
-
+    
     useEffect(()=>{
         const estaLogeado = TokenStore.subscribe(
             s=>s.token,
@@ -35,10 +38,23 @@ export const AutenticacionProvider: React.FC<AutenticacionProviderProps> = ({ ch
                 }
             }
         )
+
         return () => {
             estaLogeado();
           };
     },[]);
+
+    useEffect(()=>{
+        fetchMiSesion().then(res=>{
+            if(res){
+                
+                SesionStore.update(s=>{
+                    s.miSesion=res;
+                });
+                toast(`Bienvenido ${miID}`,3000);
+            }
+        });
+    },[token])
 
     const login = async (usuario: string, clave: string) => {
         if (usuario && clave) {
@@ -47,7 +63,7 @@ export const AutenticacionProvider: React.FC<AutenticacionProviderProps> = ({ ch
                     guardarToken(value.token);
                 }
             }).catch((error=>{
-                mostrar({message:error, duration:3000});
+                mostrar({message:`No es posible conectarse al servidor. ${error}`, duration:3000});
             }));
         } else {
         throw new Error('Login fallido');

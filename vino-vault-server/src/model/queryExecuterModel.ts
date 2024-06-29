@@ -44,7 +44,7 @@ export class QueryExecuterModel {
         return items;
     }
 
-    async comandosCustoms(item:any, comando:string, accionAlItem?:Function):Promise<void> {
+    async comandosCustoms(item:any, comando:string, accionAlItem?:Function, extension?:Iterable<readonly [string, string]>):Promise<void> {
         if (accionAlItem === undefined){
             accionAlItem = (item:any)=>{
                 return item;
@@ -53,10 +53,16 @@ export class QueryExecuterModel {
         const regex = /:(\w+)/g;
         const newQuery:string = item[comando].replace(regex,(_, match)=>{
             if(item.columnas && item.columnas.includes(match)){
-                return accionAlItem(item[match]);
+                return accionAlItem!(item[match]);
+            }else if(extension){
+                const extensionMap = new Map(extension);
+                return extensionMap.get(match) || '';
+            }else {
+                return '';
             }
         })
         console.log(`COMANDO: ${item[comando]}\nNUEVO COMANDO: ${newQuery}`);
+        await this.conexion.getClient().execute(newQuery,undefined,{prepare:true});
     }
 
 }
