@@ -78,10 +78,8 @@ export function Column(params?: { esId?: boolean, esUUID?:boolean}): PropertyDec
                 }
                 if((uuid!==undefined && uuid!=="") && this[uuid]!==undefined){
                     let uuidCopia = this[uuid];
-                    console.log('Antes del cambio',uuidCopia);
                     if(typeof uuidCopia !== "string"){
                         uuidCopia = uuidCopia.toString();
-                        console.log('Despues del cambio', uuidCopia);
                     }
                     valores.push(uuidCopia)
                 }
