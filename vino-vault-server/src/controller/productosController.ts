@@ -30,7 +30,7 @@ productosRouter.get('/productos/:id',authenticateToken, async(req:Request, res:R
 
     console.log(error);
     res.status(500).json({error:error});
-    
+
   }
 });
 productosRouter.put('/productos', authenticateToken, async(req:Request, res:Response)=>{
@@ -194,5 +194,53 @@ productosRouter.get('/productos/codigo/:id', authenticateToken, ultimosCambios(1
   }
 });
 
+productosRouter.put('/productos/vender', authenticateToken, async (req: Request, res: Response) => {
+
+  const conexion: ConexionDataBase = getConexionCargada(req);
+  const productoServ: ProductoService = new ProductoService(conexion);
+  const productosAVender: ProductoInterface[] = req.body as ProductoInterface[];
+
+  try {
+    await conexion.conectar();
+    const productosAEvaluar: ProductoInterface[] = [];
+
+    for (const p of productosAVender) {
+      const producto = await productoServ.buscarProducto(new Producto({ id_producto: p.id_producto }));
+      
+      productosAEvaluar.push(producto);
+    }
+
+    let msjError = '';
+    let exitoso: number = 0;
+
+    for (const p of productosAEvaluar) {
+      const productoRestar = productosAVender.find(pv => pv.id_producto.toString() === p.id_producto.toString());
+      const cantActualizada = p.cantidad - productoRestar.cantidad ;
+      if (cantActualizada >= 0) {
+        console.log(cantActualizada);
+        
+        let producto = { ...p, cantidad: cantActualizada };
+        await productoServ.modificarProducto(new Producto(producto));
+        exitoso++;
+      } else {
+        msjError += `Producto con id ${p.id_producto} tiene stock insuficiente. `;
+      }
+    }
+
+    if (productosAVender.length !== exitoso && exitoso > 0) {
+      return res.status(206).json({ msj: msjError });
+    }
+
+    if (exitoso === 0) {
+      return res.status(400).json({ msj: 'No se pudieron vender los productos. ' + msjError });
+    }
+
+    res.status(200).json({ msj: 'Productos vendidos exitosamente.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  } finally {
+    await conexion.desconectar();
+  }
+});
 
 export default productosRouter;

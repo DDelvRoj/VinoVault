@@ -107,6 +107,10 @@ const fetchProductos = async () => {
   return apiFetch<Producto[]>('productos/listar/todos','GET', await authHeader());
 };
 
+export const fetchProductosVender = async (productos:Producto[]) => {
+  return apiFetch<any>('productos/vender','PUT', await authHeader(), productos);
+}
+
 export const fetchProductoAgregar = async (producto:Producto) => {
   return apiFetch<any>(`productos`,'POST', await authHeader(), producto);
 }
