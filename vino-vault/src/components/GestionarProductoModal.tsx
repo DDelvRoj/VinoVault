@@ -1,10 +1,11 @@
-import React, { FormEvent, useEffect, useState } from "react";
+import React, { FormEvent, useContext, useEffect, useState } from "react";
 import { Producto } from "../data/types";
-import { IonHeader, IonToolbar, IonTitle, IonButton, IonIcon, IonContent, IonItem, IonLabel, IonInput, IonImg, InputChangeEventDetail } from "@ionic/react";
-import { closeOutline, searchOutline } from "ionicons/icons";
+import { IonHeader, IonToolbar, IonTitle, IonButton, IonIcon, IonContent, IonItem, IonLabel, IonInput, IonImg, InputChangeEventDetail, IonGrid, IonRow, IonButtons } from "@ionic/react";
+import { cameraOutline, closeOutline, searchOutline } from "ionicons/icons";
 import { CapacitorBarcodeScanner, CapacitorBarcodeScannerTypeHint } from '@capacitor/barcode-scanner';
 import { IonInputCustomEvent } from '@ionic/core';
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
+import { LoadingContext } from "../contexts/LoadingContext";
 
 export interface GestionarProductoModalProps  {
     dismiss: ()=>void;
@@ -59,103 +60,134 @@ const GestionarProductoModal: React.FC<GestionarProductoModalProps> = ({dismiss,
     return (
         <>
             <IonHeader>
-                <IonToolbar color="dark">
-                <IonTitle>Editar Producto</IonTitle>
-                <IonButton slot="end" onClick={()=>dismiss()}>
-                    <IonIcon icon={closeOutline} />
-                </IonButton>
+                <IonToolbar>
+                    <IonTitle>Editar Producto</IonTitle>
+                    <IonButtons slot="end">
+                        <IonButton color="danger" onClick={()=>dismiss()}>
+                            <IonIcon icon={closeOutline} />
+                        </IonButton>
+                    </IonButtons>
                 </IonToolbar>
             </IonHeader>
-            <IonContent>
-                <form onSubmit={async (e: React.FormEvent)=>{
-                    e.preventDefault();
-                    await handleAccion(producto).then(res=>{
-                        if(res){
-                            console.log(res);
-                        }
-                    }).catch(err=>{
-                        console.log(err);                        
-                    })
-                    dismiss();}}>
+            <IonContent className="ion-padding">
+                <>
                 {
                     
-                    (!mostrarScanner) && (
-                        <>
-                            <IonItem>
-                                <IonInput label="EAN o Código de Barra" labelPlacement="floating" value={producto.ean} onIonInput={(e: any) => handleProducto('ean', e.target.value)} />
-                            </IonItem>
-                            <IonItem>
-                                <IonInput label="Nombre del Producto" labelPlacement="floating" value={producto.nombre_producto} onIonInput={(e: any) => handleProducto('nombre_producto', e.target.value)} />
-                            </IonItem>
-                            <IonItem>
-                                <IonInput label="Descripción del Producto" labelPlacement="floating" value={producto.descripcion} onIonInput={(e: any) => handleProducto('descripcion', e.target.value)} />
-                            </IonItem>
-                            <IonItem>
-                                <IonInput label="Precio del Producto" min='0' labelPlacement="floating" required={true} type="number" value={producto.precio?.toString()} onIonInput={(e: any) => handleProducto('precio', parseInt(e.target.value, 10))} />
-                            </IonItem>
-                            <IonItem>
-                                <IonInput label="Cantidad del Producto" min='0' labelPlacement="floating" required={true} type="number" value={producto.cantidad?.toString()} onIonInput={(e: any) => handleProducto('cantidad', parseInt(e.target.value, 10))} />
-                            </IonItem>
-                            <IonItem>
-                                <IonLabel slot="floating">Imagen</IonLabel>
-                                <IonButton onClick={buscarFoto}>Cambiar Imagen</IonButton>
-                                <IonImg src={(producto.imagen?`data:image/png;base64,${producto.imagen.replace("data:image/png;base64,",'')}`:'')} />
+                    (!mostrarScanner)?(
+                        <IonGrid className="ion-padding">
+                            <form  hidden={mostrarScanner}  onSubmit={async (e: React.FormEvent)=>{
+                            e.preventDefault();
+                            await handleAccion(producto).then(res=>{
+                                if(res){
 
-                            </IonItem>
-                        </>
-                    )
+                                    console.log(res);
+                                }
+                            }).catch(err=>{
+                                console.log(err);                        
+                            })
+                            dismiss();}}>
+                                
+                                <IonRow>
+                                    <IonItem>
+                                        <IonInput label="Nombre del Producto" labelPlacement="floating" value={producto.nombre_producto} onIonInput={(e: any) => handleProducto('nombre_producto', e.target.value)} />
+                                    </IonItem>
+                                </IonRow>
+                                <IonRow>
+                                    <IonItem>
+                                        <IonInput label="Descripción del Producto" labelPlacement="floating" value={producto.descripcion} onIonInput={(e: any) => handleProducto('descripcion', e.target.value)} />
+                                    </IonItem>
+                                </IonRow>
+                                <IonRow>
+                                    <IonItem>
+                                        <IonInput label="Precio del Producto" min='0' labelPlacement="floating" required={true} type="number" value={producto.precio?.toString()} onIonInput={(e: any) => handleProducto('precio', parseInt(e.target.value, 10))} />
+                                    </IonItem>
+                                </IonRow>
+                                <IonRow>
+                                    <IonItem>
+                                        <IonInput label="Cantidad del Producto" min='0' labelPlacement="floating" required={true} type="number" value={producto.cantidad?.toString()} onIonInput={(e: any) => handleProducto('cantidad', parseInt(e.target.value, 10))} />
+                                    </IonItem>
+                                </IonRow>
+                                <IonRow>
+                                    <IonItem>
+                                        <IonLabel slot="floating">Imagen</IonLabel>
+                                        <IonButton onClick={buscarFoto}>Cambiar Imagen</IonButton>
+                                        {
+                                            producto.imagen?(
+                                                <IonImg 
+                                                src={`data:image/png;base64,${producto.imagen.replace("data:image/png;base64,",'')}`} />
+                                            ):<>&nbsp;&nbsp;No hay imagen</>
+                                        }
+
+                                    </IonItem>
+                                </IonRow>
+                                <IonRow>
+                                    <IonButton expand="block" type='submit'>
+                                        Aceptar
+                                    </IonButton>
+                                </IonRow>
+                            </form>
+                        </IonGrid>
+                    ):null
                 }
                 
                 {
-                    (mostrarScanner) && (
+                    (mostrarScanner)? (
                         <>
-                            <IonItem>
-                                <div style={{marginTop: '5px'}}></div>
-                                <br/>
-                                <IonInput value={scannerResult} onIonInput={async (e:IonInputCustomEvent<InputChangeEventDetail>)=>{
-                                    const valor = e.target.value;
-                                    if(valor){
-                                        setScannerResult(valor.toString())
-                                        handleProducto('ean',valor);
-                                    }
-                                }} 
-                                label="Resultado del Escáner" labelPlacement="floating" fill="outline" placeholder="No hay busquedas..." ></IonInput>
-                                <IonButton onClick={scanBarcode} color="dark">Escanear Código</IonButton>
-                                <IonButton hidden={!handleAccionComplementaria} onClick={async ()=>{
-                                    if(handleAccionComplementaria){
-                                        await handleAccionComplementaria(producto).then((res)=>{
-                                            if(res){
-                                                console.log(res);
-                                                const resProd = {...res as Producto};
-                                                setProducto(resProd);
-                                                setMostrarScanner(false);
-                                            } else {
-                                                console.log('error');
-                                            }
-                                        }).catch(err=>{
-                                            console.log('Error potente',err);
-                                        })
-                                    }
-                                }}>
-                                    <IonIcon icon={searchOutline}/>
-                                </IonButton>
-                                <IonButton onClick={()=>setMostrarScanner(!mostrarScanner)} color="danger">
-                                    <IonIcon icon={closeOutline}/>
-                                </IonButton>
-                            </IonItem>
-                            <IonItem>
-                                <IonLabel hidden={!(scannerResult==="")} >Revise si el código está correcto.</IonLabel>
-                            </IonItem>
+                            <form hidden={!mostrarScanner} onSubmit={async (e)=> {
+                                e.preventDefault();
+                                
+                                if(handleAccionComplementaria){
+                                    await handleAccionComplementaria(producto).then((res)=>{
+                                        if(res){
+                                            console.log(res);
+                                            const resProd = {...res as Producto};
+                                            setProducto(resProd);
+                                            
+                                        } else {
+                                            console.log('error');
+                                        }
+                                    }).catch(err=>{
+                                        console.log('Error potente',err);
+                                    }).finally(()=>{
+                                        setMostrarScanner(false);
+                                    })
+                                }
+                            }}>
+                                <IonItem>
+                                    <IonInput value={scannerResult}  required={true} minlength={11} maxlength={13} onIonInput={async (e:IonInputCustomEvent<InputChangeEventDetail>)=>{
+                                        const valor = e.target.value;
+                                        if(valor){
+                                            setScannerResult(valor.toString())
+                                            handleProducto('ean',valor);
+                                        }
+                                    }} 
+                                    label="EAN para buscar en la Web" labelPlacement="floating"  placeholder="No hay busquedas..." ></IonInput>
+                                    
+                                </IonItem>
+                                
+                                <IonItem>
+                                    <IonLabel hidden={!(scannerResult==="")} >Revise si el código está correcto.</IonLabel>
+                                </IonItem>
+
+                                <IonItem>
+                                    <IonButton onClick={scanBarcode} color="dark">
+                                        <IonIcon icon={cameraOutline} />
+                                    </IonButton>
+                                    <IonButton hidden={!handleAccionComplementaria} type="submit">
+                                        <IonIcon icon={searchOutline}/>
+                                    </IonButton>
+                                    <IonButton onClick={()=>setMostrarScanner(!mostrarScanner)} color="danger">
+                                        <IonIcon icon={closeOutline}/>
+                                    </IonButton>
+                                </IonItem>
+                            </form>
                         </>
                         
-                    )
+                    ):null
                     
                 }
                 
-                <IonButton expand="block" type='submit'>
-                    Aceptar
-                </IonButton>
-                </form>
+                </>
             </IonContent>
             </>
     );

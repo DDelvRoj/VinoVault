@@ -1,6 +1,6 @@
 import { IonAlert, IonBadge, IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonFabList, IonGrid, IonHeader, IonIcon, IonInfiniteScroll, IonInfiniteScrollContent, IonInput, IonItem, IonLabel, IonModal, IonNote, IonPage, IonRefresher, IonRefresherContent, IonRow, IonSearchbar, IonTitle, IonToolbar, RefresherEventDetail, useIonModal } from "@ionic/react";
 import { addOutline, cart, cashOutline, exit, heart, personCircleOutline, searchOutline, settingsOutline } from "ionicons/icons";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import ProductCard from "../components/ProductCard.tsx";
 import { CartStore } from "../data/CartStore.ts";
 import { ProductStore } from "../data/ProductStore.ts";
@@ -11,6 +11,7 @@ import { FavouritesStore } from "../data/FavouritesStore.ts";
 import { fetchData, fetchProductoAgregar, fetchProductoCodigoBarra, fetchProductoModificar } from "../data/fetcher.ts";
 import { useAutenticacion } from "../contexts/AutenticacionContext.tsx";
 import GestionarProductoModal, { GestionarProductoModalProps } from "../components/GestionarProductoModal.tsx";
+import { LoadingContext } from "../contexts/LoadingContext.tsx";
 
 const Home : React.FC = () => {
 
@@ -32,7 +33,9 @@ const Home : React.FC = () => {
         productoInicial:{...productoEditar},
         requiereScanner:requiereScanner,
         handleAccionComplementaria: (producto: Producto) => accionBusRef.current && accionBusRef.current(producto),
-    } as GestionarProductoModalProps )
+    } as GestionarProductoModalProps );
+    
+    const { setEstaCargando, setDescripcion } = useContext(LoadingContext);
 
 
     useEffect(()=>{
@@ -64,16 +67,24 @@ const Home : React.FC = () => {
 
 
     const handleEditarProducto = async (producto:Producto)=> {
-        const keys:(keyof Producto)[] = ["cantidad", "descripcion", "id_producto", "ean", "marca", "nombre_producto",
-            "precio", "imagen"
-        ]
+        setEstaCargando(true);
+        setDescripcion('Modificando Producto...')
+        
         const productoNuevo = {...producto};
-        for (const key of keys) {
-            if (productoNuevo[key] === productoEditar[key] && key !='id_producto') {
+
+
+        Object.keys(producto).forEach((key)=>{
+            if(productoNuevo[key] === productoEditar[key] && key !='id_producto' ) {
                 productoNuevo[key] = undefined;
             }
-        }
-        await fetchProductoModificar(productoNuevo)
+        })
+
+        await fetchProductoModificar(productoNuevo).then((res)=>{
+            setDescripcion(res.msj);
+        }).finally(()=>{
+            setEstaCargando(false);
+            setDescripcion('');
+        })
     }
 
     const fetchMore = async (e:any) => {
@@ -103,10 +114,30 @@ const Home : React.FC = () => {
     const agregarProducto = (e: any) =>{
         e.preventDefault();
         e.stopPropagation();
+        const fetchProductosAgregarLoading = async (producto:Producto) => {
+            setDescripcion(`Agregando a ${producto.nombre_producto}...`);
+            setEstaCargando(true);
+            await fetchProductoAgregar(producto).then(res=>{
+                
+                setDescripcion(res.msj);
+                setProductoEditar(res);
+                return res;
+            }).finally(()=>setEstaCargando(false));
+        }
+
+        const fetchBuscarProductos = async (producto:Producto) =>{
+            setDescripcion(`Buscando al Codigo ${producto.ean}...`);
+            setEstaCargando(true);
+            return await fetchProductoCodigoBarra(producto).then(res=>{
+                setDescripcion(`Encontrado ${res.nombre_producto}...`)
+                setProductoEditar(res);
+                return res;
+            }).finally(()=>setEstaCargando(false));
+        }
         setProductoEditar({cantidad:0,precio:0});
-        accionBusRef.current = fetchProductoCodigoBarra
+        accionBusRef.current = fetchBuscarProductos;
         setRequiereScanner(true);
-        accionRef.current = fetchProductoAgregar;
+        accionRef.current = fetchProductosAgregarLoading;
         mostrarModal();
     }
 
@@ -188,7 +219,7 @@ const Home : React.FC = () => {
                         <IonFabButton color="dark" routerLink="/ajustes-usuario" title="Ajustes de Usuario">
                             <IonIcon icon={personCircleOutline} />
                         </IonFabButton>
-                        <IonFabButton color="dark" routerLink="/ventas" title="Ventas">
+                        <IonFabButton className="ion-hide" color="dark" routerLink="/ventas" title="Ventas">
                             <IonIcon icon={cashOutline} />
                         </IonFabButton>
                     </IonFabList>

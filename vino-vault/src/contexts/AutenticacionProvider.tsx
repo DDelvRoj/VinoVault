@@ -45,15 +45,17 @@ export const AutenticacionProvider: React.FC<AutenticacionProviderProps> = ({ ch
     },[]);
 
     useEffect(()=>{
-        fetchMiSesion().then(res=>{
-            if(res){
-                
-                SesionStore.update(s=>{
-                    s.miSesion=res;
-                });
-                toast(`Bienvenido ${miID}`,3000);
-            }
-        });
+        if(token){
+            fetchMiSesion().then(res=>{
+                if(res){
+                    SesionStore.update(s=>{
+                        s.miSesion=res;
+                        toast(`Bienvenido ${s.miSesion.usuario}`,3000);
+                    });
+                    
+                }
+            });
+        }
     },[token])
 
     const login = async (usuario: string, clave: string) => {

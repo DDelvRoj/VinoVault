@@ -1,12 +1,13 @@
 import { IonButton, IonContent, IonHeader, IonPage, IonToolbar, IonTitle, IonList, IonItem, IonLabel, IonGrid, IonRow, IonCol, IonToggle, IonButtons, IonIcon, IonItemSliding, IonItemOptions, IonItemOption, IonFooter, IonFab, IonFabButton, IonAlert, useIonToast, useIonAlert, useIonModal } from "@ionic/react";
 import { addOutline, chevronBackOutline, closeOutline, createOutline, sendOutline, trashOutline } from "ionicons/icons";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import './CartProducts.css'
 import { fetchPersonas, fetchPersonasAgregar, fetchPersonasBorrar, fetchPersonasModificar } from "../data/fetcher";
 import { PersonasStore } from "../data/PersonasStore";
 import { Persona } from "../data/types";
 import GestionarUsuarioModal, { GestionarUsuarioModalProps } from "../components/GestionarUsuarioModal";
 import { SesionStore } from "../data/SesionStore";
+import { LoadingContext } from "../contexts/LoadingContext";
 
 const UserSettings: React.FC = () => {
     const miID = SesionStore.useState(s=>s.miSesion);
@@ -18,7 +19,8 @@ const UserSettings: React.FC = () => {
     const [alert] = useIonAlert();
     const [accionTitle, setAccionTitle] = useState<"Editar"|"Agregar">('Editar');
     const accionRef = useRef<(persona:Persona)=>void>();
-    const listaRef = useRef<{[key:string]:HTMLIonItemSlidingElement}>({})
+    const listaRef = useRef<{[key:string]:HTMLIonItemSlidingElement}>({});
+    const { setEstaCargando, setDescripcion } = useContext(LoadingContext);
     const [mostrar, cerrar] = useIonModal(GestionarUsuarioModal,
         {
             dismiss: ()=>cerrar(),
@@ -59,10 +61,13 @@ const UserSettings: React.FC = () => {
             [
                 {
                     text:'Si', handler: async ()=>{
+                        setEstaCargando(true);
+                        setDescripcion('Borrando Usuario...')
                         if(persona.id_usuario){
                             await fetchPersonasBorrar(persona.id_usuario);
                             await cargarPersonas();
                         }
+                        setEstaCargando(false);
                     }
                 },
                 {
@@ -76,14 +81,16 @@ const UserSettings: React.FC = () => {
     const handlePersonaAgregar = ()=>{
         setPersonaEditar({admin:false});
         const agregarPersona = async (persona:Persona) => {
+            setEstaCargando(true);
+            setDescripcion('Agregando Nuevo Usuario...')
             await fetchPersonasAgregar(persona).then(res=>{
-                console.log(res.msj);
                 cargarPersonas();
                 logs(res.msj,3000);
             }).catch((err)=>{
                 console.log(err);
-                
                 logs(err, 3000);
+            }).finally(()=>{
+                setEstaCargando(false)
             })
         }
         accionRef.current = agregarPersona;
@@ -125,16 +132,32 @@ const UserSettings: React.FC = () => {
         });
     }
 
-    const handleActualizar = async ()=>{
-        personaList.forEach(async p => {
-            await fetchPersonasModificar(p).then((res)=>{
-                console.log(res);
-            }).catch(error=>{
-                console.log(error);
-            });
-        });
-        setPersonasActualizar([]);
+    const handleActualizar = async () => {
+        try {
+          setEstaCargando(true);
+          let exitos = 0;
+      
+          await Promise.all(
+            personaList.map(async (p) => {
+              try {
+                await fetchPersonasModificar(p);
+                exitos++;
+                setDescripcion(`Modificando Usuario ${exitos}/${personaList.length}...`);
+              } catch (error) {
+                console.log(`Error al modificar usuario ${p.usuario}:`, error);
+              }
+            })
+          );
+      
+          setPersonasActualizar([]);
+          setDescripcion(`Proceso completado. Total de exitos: ${exitos}`);
+        } catch (error) {
+          console.error('Error al actualizar usuarios:', error);
+        } finally {
+          setEstaCargando(false);
+        }
     }
+      
 
     const handleIntentarCancelar = () => {
         alert(`¿Cancelar las actualizaciones?`,
@@ -154,8 +177,8 @@ const UserSettings: React.FC = () => {
     }
 
     const handleIntentarActualizar = () => {
-        alert(`¿Está seguro de querer actualizar ${personaList.length} elemento/s?`,[
-            {text:'Si',handler:handleActualizar},
+        alert(`¿Está seguro de querer actualizar ${personasActualizar.length} elemento/s?`,[
+            {text:'Si',handler:async ()=> await handleActualizar()},
             {text:'No', role:"cancel"}
         ])
     }

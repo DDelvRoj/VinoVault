@@ -124,7 +124,7 @@ personasRouter.put('/personas',authenticateToken, async (req:Request, res:Respon
     await usuarioService.cambiarRolUsuario(usuarioActualizado);
     await usuarioService.modificarUsuario(new Usuario(usuarioData));
 
-    res.status(201).send({msj: 'Usuario modificado correctamente.'});
+    res.status(201).send({msj: `Usuario ${usuarioActualizado.usuario} modificado correctamente.`});
 
   } catch (error) {
     console.error(error);

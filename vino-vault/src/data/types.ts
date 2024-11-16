@@ -1,5 +1,8 @@
 
-export interface Producto {
+export interface Evaluable {
+  [key: string]: string|number|undefined;
+}
+export interface Producto extends Evaluable {
   id_producto?: string,
   ean?:string,
   nombre_producto?:string,
@@ -7,7 +10,7 @@ export interface Producto {
   imagen?:string,
   descripcion?:string,
   marca?:string,
-  precio?:number|0
+  precio?:number|0,
 }
 
 export interface Persona {
