@@ -12,10 +12,11 @@ import { fetchData, fetchProductoAgregar, fetchProductoCodigoBarra, fetchProduct
 import { useAutenticacion } from "../contexts/AutenticacionContext.tsx";
 import GestionarProductoModal, { GestionarProductoModalProps } from "../components/GestionarProductoModal.tsx";
 import { LoadingContext } from "../contexts/LoadingContext.tsx";
+import { SesionStore } from "../data/SesionStore.ts";
 
 const Home : React.FC = () => {
 
-    
+    const admin = SesionStore.useState(s=>s.miSesion.admin);
     const cartRef = useRef<HTMLIonIconElement>(null);
     const products = ProductStore.useState(s=>s.products);
     const favoritos = FavouritesStore.useState(s=>s.product_ids);
@@ -216,7 +217,7 @@ const Home : React.FC = () => {
                         <IonFabButton color="dark" onClick={(e)=>agregarProducto(e)} title="Registrar Productos">
                             <IonIcon icon={addOutline} />
                         </IonFabButton>
-                        <IonFabButton color="dark" routerLink="/ajustes-usuario" title="Ajustes de Usuario">
+                        <IonFabButton className={!admin?'ion-hide':''} color="dark" routerLink="/ajustes-usuario" title="Ajustes de Usuario">
                             <IonIcon icon={personCircleOutline} />
                         </IonFabButton>
                         <IonFabButton className="ion-hide" color="dark" routerLink="/ventas" title="Ventas">
