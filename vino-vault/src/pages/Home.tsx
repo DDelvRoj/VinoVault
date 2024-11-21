@@ -1,6 +1,6 @@
-import { IonAlert, IonBadge, IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonFabList, IonGrid, IonHeader, IonIcon, IonInfiniteScroll, IonInfiniteScrollContent, IonNote, IonPage, IonRefresher, IonRefresherContent, IonRow, IonSearchbar, IonTitle, IonToolbar, RefresherEventDetail } from "@ionic/react";
-import { add, cart, exit, heart, personCircleOutline, searchOutline, settingsOutline } from "ionicons/icons";
-import { useEffect, useRef, useState } from "react";
+import { IonAlert, IonBadge, IonButton, IonButtons, IonCol, IonContent, IonFab, IonFabButton, IonFabList, IonGrid, IonHeader, IonIcon, IonInfiniteScroll, IonInfiniteScrollContent, IonInput, IonItem, IonLabel, IonModal, IonNote, IonPage, IonRefresher, IonRefresherContent, IonRow, IonSearchbar, IonTitle, IonToolbar, RefresherEventDetail, useIonModal } from "@ionic/react";
+import { addOutline, cart, cashOutline, exit, heart, personCircleOutline, searchOutline, settingsOutline } from "ionicons/icons";
+import { useContext, useEffect, useRef, useState } from "react";
 import ProductCard from "../components/ProductCard.tsx";
 import { CartStore } from "../data/CartStore.ts";
 import { ProductStore } from "../data/ProductStore.ts";
@@ -8,25 +8,46 @@ import "./Home.css";
 import { Producto } from "../data/types.ts";
 import React from "react";
 import { FavouritesStore } from "../data/FavouritesStore.ts";
-import { fetchData } from "../data/fetcher.ts";
+import { fetchData, fetchProductoAgregar, fetchProductoCodigoBarra, fetchProductoModificar } from "../data/fetcher.ts";
 import { useAutenticacion } from "../contexts/AutenticacionContext.tsx";
+import GestionarProductoModal, { GestionarProductoModalProps } from "../components/GestionarProductoModal.tsx";
+import { LoadingContext } from "../contexts/LoadingContext.tsx";
 
 const Home : React.FC = () => {
 
+    
     const cartRef = useRef<HTMLIonIconElement>(null);
     const products = ProductStore.useState(s=>s.products);
     const favoritos = FavouritesStore.useState(s=>s.product_ids);
     const shopCart = CartStore.useState(s => s.product_ids);
     const [ searchResults, setsearchResults ] = useState<Producto[]>([]);
     const [ amountLoaded, setAmountLoaded ] = useState(6);
+    const [productoEditar, setProductoEditar] = useState<Producto>({cantidad:0,precio:0});
     const {logout} = useAutenticacion();
+    const [requiereScanner, setRequiereScanner] = useState(false);
+    const accionRef = useRef<(p:Producto) => Promise<any>>();
+    const accionBusRef = useRef<(p:Producto) => Promise<Producto>>();
+    const [mostrar, cerrar] = useIonModal(GestionarProductoModal, {
+        dismiss: ()=>cerrar(),
+        handleAccion: (producto: Producto) => accionRef.current && accionRef.current(producto),
+        productoInicial:{...productoEditar},
+        requiereScanner:requiereScanner,
+        handleAccionComplementaria: (producto: Producto) => accionBusRef.current && accionBusRef.current(producto),
+    } as GestionarProductoModalProps );
+    
+    const { setEstaCargando, setDescripcion } = useContext(LoadingContext);
 
 
     useEffect(()=>{
-        if(!localStorage.getItem('productos')){
+        
+        if(products.length===0){
             fetchData();
         }
     }, []);
+
+    useEffect(()=>{
+        setsearchResults(products);
+    },[products]);
 
     useEffect(() => {
         if(amountLoaded>=0){
@@ -39,15 +60,86 @@ const Home : React.FC = () => {
             setsearchResults(productosTop);
         }
     }, [amountLoaded]);
+
     const updateProductos = async (event: CustomEvent<RefresherEventDetail>)=> {
-       await fetchData();
-       event.detail.complete();
+       await fetchData().finally(()=>event.detail.complete());
+    }
+
+
+    const handleEditarProducto = async (producto:Producto)=> {
+        setEstaCargando(true);
+        setDescripcion('Modificando Producto...')
+        
+        const productoNuevo = {...producto};
+
+
+        Object.keys(producto).forEach((key)=>{
+            if(productoNuevo[key] === productoEditar[key] && key !='id_producto' ) {
+                productoNuevo[key] = undefined;
+            }
+        })
+
+        await fetchProductoModificar(productoNuevo).then((res)=>{
+            setDescripcion(res.msj);
+        }).finally(()=>{
+            setEstaCargando(false);
+            setDescripcion('');
+        })
     }
 
     const fetchMore = async (e:any) => {
 		setAmountLoaded(prevAmount => (prevAmount + 6));
 		e.target.complete();
 	}
+
+    const editarProducto = (e: any, producto:Producto) =>{
+        e.preventDefault();
+        e.stopPropagation();
+        setProductoEditar(producto);
+        setRequiereScanner(false);
+        accionRef.current = handleEditarProducto;
+        accionBusRef.current = undefined;
+        mostrarModal();
+    }
+
+    const mostrarModal = ()=>{
+        mostrar({
+            onDidDismiss: async ()=>{
+                setProductoEditar({cantidad:0,precio:0});
+                await fetchData();
+            }
+        });
+    }
+
+    const agregarProducto = (e: any) =>{
+        e.preventDefault();
+        e.stopPropagation();
+        const fetchProductosAgregarLoading = async (producto:Producto) => {
+            setDescripcion(`Agregando a ${producto.nombre_producto}...`);
+            setEstaCargando(true);
+            await fetchProductoAgregar(producto).then(res=>{
+                
+                setDescripcion(res.msj);
+                setProductoEditar(res);
+                return res;
+            }).finally(()=>setEstaCargando(false));
+        }
+
+        const fetchBuscarProductos = async (producto:Producto) =>{
+            setDescripcion(`Buscando al Codigo ${producto.ean}...`);
+            setEstaCargando(true);
+            return await fetchProductoCodigoBarra(producto).then(res=>{
+                setDescripcion(`Encontrado ${res.nombre_producto}...`)
+                setProductoEditar(res);
+                return res;
+            }).finally(()=>setEstaCargando(false));
+        }
+        setProductoEditar({cantidad:0,precio:0});
+        accionBusRef.current = fetchBuscarProductos;
+        setRequiereScanner(true);
+        accionRef.current = fetchProductosAgregarLoading;
+        mostrarModal();
+    }
 
     const search = async (e:React.KeyboardEvent<HTMLIonSearchbarElement>) => {
         const searchVal = e.currentTarget.value;
@@ -60,6 +152,8 @@ const Home : React.FC = () => {
             setsearchResults(products)
         }
     }
+
+   
 
     return (
 
@@ -92,6 +186,7 @@ const Home : React.FC = () => {
                     </IonRefresherContent>
                 </IonRefresher>
                 <IonSearchbar className="search" onKeyUp={ search } placeholder="Intenta con 'Vino'" searchIcon={ searchOutline } animated={ true } />
+                
                 <IonGrid>
                     <IonRow className="ion-text-center">
                         <IonCol size="12">
@@ -102,7 +197,7 @@ const Home : React.FC = () => {
                         { searchResults && searchResults.map((product, index) => {
                             if ((index <= amountLoaded)) {
                                 return (
-                                    <ProductCard key={ `producto_${ index }`} product={ product } index={ index } cartRef={ cartRef }  />
+                                    <ProductCard key={ `producto_${ index }`} product={ product } index={ index } cartRef={ cartRef } editarProducto={editarProducto}  />
                                 );
                             }
                             return null;
@@ -118,11 +213,14 @@ const Home : React.FC = () => {
                         <IonIcon icon={settingsOutline} />
                     </IonFabButton> 
                     <IonFabList side="top">
-                        <IonFabButton color="dark" routerLink="/registrar-producto">
-                            <IonIcon icon={add} />
+                        <IonFabButton color="dark" onClick={(e)=>agregarProducto(e)} title="Registrar Productos">
+                            <IonIcon icon={addOutline} />
                         </IonFabButton>
-                        <IonFabButton color="dark" routerLink="/ajustes-usuario">
+                        <IonFabButton color="dark" routerLink="/ajustes-usuario" title="Ajustes de Usuario">
                             <IonIcon icon={personCircleOutline} />
+                        </IonFabButton>
+                        <IonFabButton className="ion-hide" color="dark" routerLink="/ventas" title="Ventas">
+                            <IonIcon icon={cashOutline} />
                         </IonFabButton>
                     </IonFabList>
                 </IonFab>

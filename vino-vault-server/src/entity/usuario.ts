@@ -2,7 +2,10 @@ import { Column, Entity } from "../decorator";
 import { Usuario as Us } from "../type/index";
 
  @Entity("usuarios" ,[
-    ['validar',"CREATE USER IF NOT EXISTS ':usuario' WITH PASSWORD ':clave'"]
+    ['validar',"CREATE USER IF NOT EXISTS ':usuario' WITH PASSWORD ':pseudoclave'"],
+    ['borrar', "DROP USER IF EXISTS ':usuario'"],
+    ['cambiarPass', "ALTER USER IF EXISTS ':usuario WITH password ':pseudoclave'"],
+    ['darRol', "GRANT ':rol' TO ':usuario'"]
  ])
 export class Usuario {
    
@@ -72,7 +75,7 @@ export class Usuario {
     public get admin() : boolean {
         return this._admin;
     }
-    
+
     public set admin(admin : boolean) {
         this._admin = admin;
     }

@@ -77,7 +77,11 @@ export function Column(params?: { esId?: boolean, esUUID?:boolean}): PropertyDec
                     }
                 }
                 if((uuid!==undefined && uuid!=="") && this[uuid]!==undefined){
-                    valores.push(this[uuid])
+                    let uuidCopia = this[uuid];
+                    if(typeof uuidCopia !== "string"){
+                        uuidCopia = uuidCopia.toString();
+                    }
+                    valores.push(uuidCopia)
                 }
                 return valores;
             },

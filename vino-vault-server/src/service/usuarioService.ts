@@ -54,5 +54,20 @@ export class UsuarioService {
     async crearUsuario(usuario:Usuario){
         await this.queryExecuter.comandosCustoms(usuario,'validar',transformarTexto);
     }
+
+    @manejarErrores
+    async borrarUsuario(usuarioDel:Usuario){
+        await this.queryExecuter.eliminar(usuarioDel);
+    }
+
+    @manejarErrores
+    async borrarCuentaUsuario(usuarioDel:Usuario){
+        await this.queryExecuter.comandosCustoms(usuarioDel, 'borrar', transformarTexto)
+    }
+
+    @manejarErrores
+    async cambiarRolUsuario(usuarioRol:Usuario){
+        await this.queryExecuter.comandosCustoms(usuarioRol, 'darRol', transformarTexto, [['rol',(usuarioRol.admin?'administrativo':'usuario_bd')]])
+    }
 }
 

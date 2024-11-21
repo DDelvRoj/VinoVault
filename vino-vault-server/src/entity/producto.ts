@@ -50,7 +50,6 @@ export class Producto {
         this._descripcion = v;
     }
 
-    @Column()
     public get imagen() : string {
         return this._imagen;
     }

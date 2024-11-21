@@ -26,13 +26,13 @@ import Product from './pages/Product.tsx';
 import FavouriteProducts from './pages/FavouriteProducts.tsx';
 import CartProducts from './pages/CartProducts.tsx';
 import UserSettings from './pages/UserSettings.tsx';
-import AddUser from './pages/AddUser.tsx';
-import RegistrarProducto from './pages/RegistrarProducto.tsx';
 import Login from './pages/Login.tsx';
 import { useAutenticacion } from './contexts/AutenticacionContext.tsx';
 import { AutenticacionProvider } from './contexts/AutenticacionProvider.tsx';
 import ProtectedRoute from './components/ProtectedRoute.tsx';
 import { useEffect, useState } from 'react';
+import SalesList from './pages/SalesList.tsx';
+import { LoadingProvider } from './contexts/LoadingContext.tsx';
 
 
 setupIonicReact({});
@@ -40,11 +40,13 @@ setupIonicReact({});
 const App: React.FC = () => {
 
 	return (
-		<AutenticacionProvider>
-			<IonApp>
-				<Rutas/>
-			</IonApp>
-		</AutenticacionProvider>
+		<LoadingProvider>
+			<AutenticacionProvider>
+				<IonApp>
+					<Rutas/>
+				</IonApp>
+			</AutenticacionProvider>
+		</LoadingProvider>
 	);
 }
 
@@ -74,12 +76,11 @@ const Rutas: React.FC = ()=>{
 					<ProtectedRoute path="/cart" component={CartProducts} estaLogeado={logeado} exact/>
 
 					<ProtectedRoute path="/producto/:id" component={Product} estaLogeado={logeado} exact/>
-
-					<ProtectedRoute path="/registrar-producto" component={RegistrarProducto} estaLogeado={logeado} exact/>
 					
 					<ProtectedRoute path="/ajustes-usuario" component={UserSettings} estaLogeado={logeado} exact/>
+
+					<ProtectedRoute path="/ventas" component={SalesList} estaLogeado={logeado} exact/>
 					
-					<ProtectedRoute path="/add-user" component={AddUser} estaLogeado={logeado} exact/>
 				</IonRouterOutlet>
 		</IonReactRouter>
 	);

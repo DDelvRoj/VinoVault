@@ -1,5 +1,6 @@
 import { manejarErrores } from '../decorator';
 import { Producto } from '../entity/producto';
+import { Producto as ProductoType } from '../type';
 import { ConexionDataBase } from '../model/conexionBD';
 import { QueryExecuterModel } from '../model/queryExecuterModel';
 export class ProductoService {
@@ -17,7 +18,7 @@ export class ProductoService {
 
     @manejarErrores
     async buscarProducto(item:Producto){
-        return await this.queryExecuter.buscar(item);
+        return await this.queryExecuter.buscar(item) as ProductoType;
     }
 
     @manejarErrores

@@ -1,24 +1,24 @@
-import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCol, IonIcon } from "@ionic/react";
+import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCol, IonIcon, IonRow } from "@ionic/react";
 import { cart, cartOutline, createOutline, heart, heartOutline } from "ionicons/icons";
 import { MouseEvent, useEffect, useRef, useState } from "react";
-import { addToCart } from "../data/CartStore.ts";
+import { addToCart, CartStore } from "../data/CartStore.ts";
 import { addToFavourites, FavouritesStore } from "../data/FavouritesStore.ts";
 import  "./ProductCard.css";
 import React from "react";
 import { Producto } from "../data/types.ts";
 
-
 interface ProductCardProps{
     product: Producto; 
     index?: any; 
-    cartRef?: any
+    cartRef?: any;
+    editarProducto: Function;
 }
 
 const ProductCard : React.FC<ProductCardProps> = (props) => {
 
-    const { product, index, cartRef } = props;
+    const { product, index, cartRef, editarProducto } = props;
     const favourites = FavouritesStore.useState(s => s.product_ids);
-
+    const productoEnCompra = CartStore.useState(s=>s.product_ids.filter(id=>id===product.id_producto).length);
     const productCartRef = useRef<HTMLIonIconElement>(null);
     const productFavouriteRef = useRef<HTMLIonIconElement>(null);
     const [ isFavourite, setIsFavourite ] = useState(false);
@@ -73,21 +73,39 @@ const ProductCard : React.FC<ProductCardProps> = (props) => {
                 <IonCardHeader className="productCardHeader">
                     <div className="productCardActions">
                         <IonIcon className="productCardAction" color={isFavourite ? "danger" : "medium"} icon={isFavourite ? heart : heartOutline} onClick={(e) => addProductToFavourites(e, product.id_producto)}/>
-                        <IonIcon ref={ productFavouriteRef } style={{ position: "absolute", display: "none" }} className="productCardAction" color="danger" icon={ heart } />
-                        <IonIcon className="productCardAction" size="medium" icon={createOutline} />
+                        <IonIcon ref={ productFavouriteRef } style={{ position: "absolute", display: "none" }} className="productCardAction" color="danger" icon={ heart }  />
+                        <IonIcon className="productCardAction" size="medium" icon={createOutline} onClick={(e)=>editarProducto(e, product)}/>
                     </div>
                     <img src={(product?.imagen??"img-no-encontrado.png") } alt="product pic" />
                     <p className="ion-text-wrap">{ product.nombre_producto }</p>
                 </IonCardHeader>
                 <IonCardContent className="categoryCardContent" >
                     <div className="productPrice">
-                        <IonButton style={{ width: "100%" }} color="light" >
-                            { product.precio?.toLocaleString('es-ES').concat(' ₲') }
-                        </IonButton>
-                        <IonButton color="dark" onClick={e => addProductToCart(e, product.id_producto)} >
-                            <IonIcon ref={cartRef} icon={cartOutline}  />
-                        </IonButton>
-                        <IonIcon ref={productCartRef} icon={ cart } color="dark" style={{ position: "absolute", display: "none", fontSize: "3rem" }}/>
+                        <IonRow>
+                            <IonButton className="auto-width-button" color="light" >
+                                { product.precio?.toLocaleString('es-ES').concat(' ₲') }
+                            </IonButton>
+                            {
+                            product.cantidad && product.cantidad - productoEnCompra > 0 ? (
+                                <>
+                                <IonButton className="auto-width-button" color="dark" onClick={e => addProductToCart(e, product.id_producto)}>
+                                    <IonIcon ref={cartRef} icon={cartOutline} />
+                                </IonButton>
+                                <IonIcon ref={productCartRef} icon={cart} color="dark" style={{ position: "absolute", display: "none", fontSize: "3rem" }} />
+                                </>
+                            ) : null
+                            }
+
+                            {
+                            product.cantidad !== undefined && product.cantidad !== null ? (
+                                <IonButton className="auto-width-button" color={product.cantidad - productoEnCompra > 1 ? 'tertiary' : 'danger'}>
+                                {product.cantidad - productoEnCompra > 0 ? product.cantidad - productoEnCompra : 0} restantes
+                                </IonButton>
+                            ) : null
+                            }
+
+                        </IonRow>
+                        
                     </div>
                 </IonCardContent>
             </IonCard>

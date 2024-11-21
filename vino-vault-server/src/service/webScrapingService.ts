@@ -6,7 +6,7 @@ import { guardarImagen } from "../util/imagenesUtil";
 
 
 const browser = puppeteer.launch({
-    headless:false,
+    headless:true,
     'args' : [
         '--no-sandbox',
         '--disable-setuid-sandbox'
@@ -14,8 +14,9 @@ const browser = puppeteer.launch({
 });
 
 async function buscarCodigoDeBarra (codigo:string){
+    const page:Page = await (await browser).newPage();
     try {
-        const page:Page = await (await browser).newPage();
+        
         await page.setCacheEnabled(false);
         const link = `https://go-upc.com/search?q=${codigo}`;
         console.log(link);
@@ -73,14 +74,16 @@ async function buscarCodigoDeBarra (codigo:string){
             marca: marca,
             imagen: base64ImageData
         };
+        
+        return producto;
+    } catch (error) {
+        throw error;
+    } finally {
         const cookies = await page.cookies();
         for (let cookie of cookies) {
         await page.deleteCookie(cookie);
         }
         await page.close();
-        return producto;
-    } catch (error) {
-        throw error;
     }
 }
 

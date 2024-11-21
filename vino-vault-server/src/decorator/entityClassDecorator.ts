@@ -1,6 +1,6 @@
 import { getMetadata } from "./metadataStorage";
 
-export function Entity(tabla: string,customCommands?:[any]): ClassDecorator {
+export function Entity(tabla: string,customCommands?:Iterable<readonly [string, string]>): ClassDecorator {
     return function(target: any) {
         const tablaNombre = tabla;
 
