@@ -48,8 +48,8 @@ sudo mkdir /usr/lib/jvm
 Continuamos uno por uno:
 ```bash
 sudo mv openlogic-openjdk-11.0.22+7-linux-x64 /usr/lib/jvm
-echo 'export JAVA_HOME=/usr/lib/jvm/openlogic-openjdk-11.0.22+7-linux-x64' >> ~/.bashrc
-echo 'export PATH=$PATH:$JAVA_HOME/bin' >> ~/.bashrc
+echo 'export JAVA_HOME=/usr/lib/jvm/openlogic-openjdk-11.0.22+7-linux-x64' >> ~/.bashrc'
+echo 'export PATH=$PATH:$JAVA_HOME/bin' >> ~/.bashrc'
 source ~/.bashrc
 ```
 Ahora, solamente toca probar si es que el java fue instalado correctamente:
