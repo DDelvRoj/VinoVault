@@ -1,4 +1,4 @@
-import { IonBadge, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonPage, IonRow, IonText, IonTitle, IonToolbar, useIonToast } from "@ionic/react";
+import { IonBadge, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonLabel, IonPage, IonRow, IonText, IonTitle, IonToolbar, useIonToast } from "@ionic/react";
 import {   cart, cartOutline, chevronBackOutline, heart, heartOutline } from "ionicons/icons";
 import { useEffect, useRef, useState } from "react";
 import ProductCard from "../components/ProductCard.tsx";
@@ -105,35 +105,43 @@ const Product : React.FC = () => {
                                     <p className="ion-text-wrap">{ product.marca }</p>
                                     <IonText color="dark"><h4><b>Descripción del Producto</b></h4></IonText>
                                     <div className="productDescription">
-                                        <p className="ion-text-wrap custom-scrollbar">{product.descripcion}</p>
+                                        <IonLabel className="custom-scrollbar">
+                                            <p className="ion-text-wrap">{product.descripcion}</p>
+                                        </IonLabel>
                                     </div>
                                 </IonCardHeader>
 
                                 <IonCardContent className="categoryCardContent">
                                     
-                                    <div className="productPrice">
-                                    <IonButton className="auto-width-button" color="light" >
-                                    { product.precio?.toLocaleString('es-ES').concat(' ₲') }
-                                    </IonButton>
-                                        {
-                                            product.cantidad && product.cantidad - productoEnCompra > 0 ? (
-                                                <>
-                                                <IonButton className="auto-width-button" color="dark" onClick={e => addProductToCart(e, params.id)}>
-                                                    <IonIcon ref={cartRef} icon={cartOutline} />&nbsp;&nbsp;Agregar al Carrito
+                                    <IonGrid className="productPrice">
+                                        <IonRow>
+                                            <IonCol>
+                                                <IonButton className="auto-width-button" color="light" >
+                                                { product.precio?.toLocaleString('es-ES').concat(' ₲') }
                                                 </IonButton>
-                                                <IonIcon ref={cartRef} icon={cart} color="dark" style={{ position: "absolute", display: "none", fontSize: "3rem" }} />
-                                                </>
-                                            ) : null
-                                        }
-                                        {
-                                            product.cantidad !== undefined && product.cantidad !== null ? (
-                                                <IonButton className="auto-width-button" color={product.cantidad - productoEnCompra > 1 ? 'tertiary' : 'danger'}>
-                                                {product.cantidad - productoEnCompra > 0 ? product.cantidad - productoEnCompra : 0} restantes
-                                                </IonButton>
-                                            ) : null
-                                        }
-                                        <IonIcon icon={ cart } color="dark" style={{ position: "absolute", display: "none", fontSize: "3rem" }} id={ `lugar_carrito_${ product.id_producto }` }/>     
-                                    </div>
+                                            </IonCol>
+                                            {
+                                                product.cantidad && product.cantidad - productoEnCompra > 0 ? (
+                                                    <IonCol>
+                                                        <IonButton className="auto-width-button" color="dark" onClick={e => addProductToCart(e, params.id)}>
+                                                            <IonIcon ref={cartRef} icon={cartOutline} />&nbsp;&nbsp;Agregar al Carrito
+                                                        </IonButton>
+                                                        <IonIcon ref={cartRef} icon={cart} color="dark" style={{ position: "absolute", display: "none", fontSize: "3rem" }} />
+                                                    </IonCol>
+                                                ) : null
+                                            }
+                                            {
+                                                product.cantidad !== undefined && product.cantidad !== null ? (
+                                                    <IonCol>
+                                                        <IonButton className="auto-width-button" color={product.cantidad - productoEnCompra > 1 ? 'tertiary' : 'danger'}>
+                                                        {product.cantidad - productoEnCompra > 0 ? product.cantidad - productoEnCompra : 0} restantes
+                                                        </IonButton>
+                                                    </IonCol>
+                                                ) : null
+                                            }
+                                            <IonIcon icon={ cart } color="dark" style={{ position: "absolute", display: "none", fontSize: "3rem" }} id={ `lugar_carrito_${ product.id_producto }` }/>
+                                        </IonRow>     
+                                    </IonGrid>
                                 </IonCardContent>
                             </IonCard>
                         </IonCol>

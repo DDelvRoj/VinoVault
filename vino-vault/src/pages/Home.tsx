@@ -122,8 +122,13 @@ const Home : React.FC = () => {
                 
                 setDescripcion(res.msj);
                 setProductoEditar(res);
+                console.log(res);
+                
                 return res;
-            }).finally(()=>setEstaCargando(false));
+            }).catch(err=>{
+                console.log(err)
+            })
+            .finally(()=>setEstaCargando(false));
         }
 
         const fetchBuscarProductos = async (producto:Producto) =>{

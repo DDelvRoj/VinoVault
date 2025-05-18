@@ -69,7 +69,8 @@ productosRouter.put('/productos', authenticateToken, async(req:Request, res:Resp
 })
 
 productosRouter.post('/productos',authenticateToken, async(req:Request, res:Response)=>{
-
+  console.log('Agregando...');
+  
   const conexion:ConexionDataBase = getConexionCargada(req);
   const productoService:ProductoService = new ProductoService(conexion);
   const productoInsertable:ProductoInterface = req.body as ProductoInterface;
