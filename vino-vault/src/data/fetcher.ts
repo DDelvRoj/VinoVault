@@ -2,7 +2,8 @@ import { CapacitorHttp } from "@capacitor/core";
 import { ProductStore } from "./ProductStore.ts";
 import { vaciarTokenStore } from "./TokenStore.ts";
 import { Persona, Producto } from "./types.ts";
-const link:string = 'http://localhost:3000';
+const link:string = "http://localhost:3000";
+//'https://vinovault.loca.lt';
 
 export const fetchData = async () =>{
   const products:Producto[] = (await fetchProductos()).map(p=>{

@@ -67,6 +67,10 @@
     flex-direction: row;
 }
 
+.custom-scrollbar {
+    padding-left: 5%;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
     width: 8px; /* Ancho del scrollbar */
   }
@@ -89,4 +93,5 @@
   .productDescription {
     max-height: 100px; /* o cualquier otra altura máxima deseada */
     overflow-y: auto; /* Añade barras de desplazamiento vertical si el contenido excede la altura máxima */
+    max-width: 70%;
 }

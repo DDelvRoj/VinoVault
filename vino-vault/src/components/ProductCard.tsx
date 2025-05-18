@@ -80,27 +80,31 @@ const ProductCard : React.FC<ProductCardProps> = (props) => {
                     <p className="ion-text-wrap">{ product.nombre_producto }</p>
                 </IonCardHeader>
                 <IonCardContent className="categoryCardContent" >
-                    <div className="productPrice">
-                        <IonRow>
-                            <IonButton className="auto-width-button" color="light" >
-                                { product.precio?.toLocaleString('es-ES').concat(' ₲') }
-                            </IonButton>
+                    <div className="productPrice ion-padding">
+                        <IonRow >
+                            <IonCol>
+                                <IonButton className="auto-width-button" color="light" expand="full">
+                                    { product.precio?.toLocaleString('es-ES').concat(' ₲') }
+                                </IonButton>
+                            </IonCol>
                             {
                             product.cantidad && product.cantidad - productoEnCompra > 0 ? (
-                                <>
-                                <IonButton className="auto-width-button" color="dark" onClick={e => addProductToCart(e, product.id_producto)}>
-                                    <IonIcon ref={cartRef} icon={cartOutline} />
-                                </IonButton>
-                                <IonIcon ref={productCartRef} icon={cart} color="dark" style={{ position: "absolute", display: "none", fontSize: "3rem" }} />
-                                </>
+                                <IonCol>
+                                    <IonButton className="auto-width-button" color="dark" expand="full" onClick={e => addProductToCart(e, product.id_producto)}>
+                                        <IonIcon ref={cartRef} icon={cartOutline} />
+                                    </IonButton>
+                                    <IonIcon ref={productCartRef} icon={cart} color="dark" style={{ position: "absolute", display: "none", fontSize: "3rem" }} />
+                                </IonCol>
                             ) : null
                             }
 
                             {
                             product.cantidad !== undefined && product.cantidad !== null ? (
-                                <IonButton className="auto-width-button" color={product.cantidad - productoEnCompra > 1 ? 'tertiary' : 'danger'}>
-                                {product.cantidad - productoEnCompra > 0 ? product.cantidad - productoEnCompra : 0} restantes
-                                </IonButton>
+                                <IonCol>
+                                    <IonButton expand="full" className="auto-width-button" color={product.cantidad - productoEnCompra > 1 ? 'tertiary' : 'danger'}>
+                                        {product.cantidad - productoEnCompra > 0 ? product.cantidad - productoEnCompra : 0} restantes
+                                    </IonButton>
+                                </IonCol>
                             ) : null
                             }
 

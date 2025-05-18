@@ -1,6 +1,6 @@
 import React, { FormEvent, useContext, useEffect, useState } from "react";
 import { Producto } from "../data/types";
-import { IonHeader, IonToolbar, IonTitle, IonButton, IonIcon, IonContent, IonItem, IonLabel, IonInput, IonImg, InputChangeEventDetail, IonGrid, IonRow, IonButtons } from "@ionic/react";
+import { IonHeader, IonToolbar, IonTitle, IonButton, IonIcon, IonContent, IonItem, IonLabel, IonInput, IonImg, InputChangeEventDetail, IonGrid, IonRow, IonButtons, IonCol, useIonToast } from "@ionic/react";
 import { cameraOutline, closeOutline, searchOutline } from "ionicons/icons";
 import { CapacitorBarcodeScanner, CapacitorBarcodeScannerTypeHint } from '@capacitor/barcode-scanner';
 import { IonInputCustomEvent } from '@ionic/core';
@@ -20,6 +20,7 @@ const GestionarProductoModal: React.FC<GestionarProductoModalProps> = ({dismiss,
     const [producto, setProducto] = useState<Producto>({});
     const [mostrarScanner, setMostrarScanner] = useState(false);
     const [scannerResult, setScannerResult] = useState<string>('');
+    const [alert] = useIonToast()
     
     useEffect(()=>{
         if(requiereScanner){
@@ -38,6 +39,7 @@ const GestionarProductoModal: React.FC<GestionarProductoModalProps> = ({dismiss,
     };
 
     const buscarFoto = async () => {
+        await Camera.checkPermissions();
         const photo = await Camera.getPhoto({
             resultType: CameraResultType.Base64,
             source: CameraSource.Photos,
@@ -50,11 +52,17 @@ const GestionarProductoModal: React.FC<GestionarProductoModalProps> = ({dismiss,
     }
 
     const scanBarcode = async () => {
-        const result = await CapacitorBarcodeScanner.scanBarcode({
-          hint: CapacitorBarcodeScannerTypeHint.ALL
+         await CapacitorBarcodeScanner.scanBarcode({
+            scanInstructions:"Apunta bien porfa",
+            hint: CapacitorBarcodeScannerTypeHint.ALL
+        }).then(result=>{
+            setScannerResult(result.ScanResult);
+            handleProducto('ean',result.ScanResult);
+        }).catch((err)=>{
+            console.log(err);
+            alert('Error al escanear.',2500);
         });
-        setScannerResult(result.ScanResult);
-        handleProducto('ean',result.ScanResult);
+        
     };
 
     return (
@@ -135,26 +143,30 @@ const GestionarProductoModal: React.FC<GestionarProductoModalProps> = ({dismiss,
                         <>
                             <form hidden={!mostrarScanner} onSubmit={async (e)=> {
                                 e.preventDefault();
-                                
-                                if(handleAccionComplementaria){
+                                const dimensionCorrecta = scannerResult.length>=11;
+                                if(handleAccionComplementaria && dimensionCorrecta ){
                                     await handleAccionComplementaria(producto).then((res)=>{
                                         if(res){
                                             console.log(res);
                                             const resProd = {...res as Producto};
                                             setProducto(resProd);
-                                            
+                                            setMostrarScanner(false);
                                         } else {
                                             console.log('error');
                                         }
                                     }).catch(err=>{
                                         console.log('Error potente',err);
+                                        alert("No se encontró el producto",2500);
                                     }).finally(()=>{
-                                        setMostrarScanner(false);
-                                    })
+                                        setScannerResult('')
+                                    });
+                                }
+                                if(!dimensionCorrecta){
+                                    setScannerResult('');
                                 }
                             }}>
                                 <IonItem>
-                                    <IonInput value={scannerResult}  required={true} minlength={11} maxlength={13} onIonInput={async (e:IonInputCustomEvent<InputChangeEventDetail>)=>{
+                                    <IonInput value={scannerResult} type="number" required minlength={11} maxlength={13} onIonInput={async (e:IonInputCustomEvent<InputChangeEventDetail>)=>{
                                         const valor = e.target.value;
                                         if(valor){
                                             setScannerResult(valor.toString())
@@ -165,20 +177,30 @@ const GestionarProductoModal: React.FC<GestionarProductoModalProps> = ({dismiss,
                                     
                                 </IonItem>
                                 
-                                <IonItem>
-                                    <IonLabel hidden={!(scannerResult==="")} >Revise si el código está correcto.</IonLabel>
+                                <IonItem className={(scannerResult.length>=11 && scannerResult.length<=13?'ion-hide':'')}>
+                                    <IonLabel color="danger" >Revise si el código está correcto. Debe tener entre 11 a 13 números.</IonLabel>
                                 </IonItem>
 
-                                <IonItem>
-                                    <IonButton onClick={scanBarcode} color="dark">
-                                        <IonIcon icon={cameraOutline} />
-                                    </IonButton>
-                                    <IonButton hidden={!handleAccionComplementaria} type="submit">
-                                        <IonIcon icon={searchOutline}/>
-                                    </IonButton>
-                                    <IonButton onClick={()=>setMostrarScanner(!mostrarScanner)} color="danger">
-                                        <IonIcon icon={closeOutline}/>
-                                    </IonButton>
+                                <IonItem className="ion-justify-content-center">
+                                    <IonGrid>
+                                        <IonRow>
+                                            <IonCol>
+                                                <IonButton onClick={scanBarcode} expand="full" color="dark">
+                                                    Escanear <IonIcon className="ion-padding-start" icon={cameraOutline}  />
+                                                </IonButton>
+                                            </IonCol>
+                                            <IonCol  hidden={!handleAccionComplementaria}>
+                                                <IonButton type="submit" expand="full" >
+                                                    Buscar <IonIcon className="ion-padding-start" icon={searchOutline}/>
+                                                </IonButton>
+                                            </IonCol>
+                                            <IonCol>
+                                                <IonButton onClick={()=>setMostrarScanner(!mostrarScanner)} color="danger" expand="full" >
+                                                    Manual <IonIcon className="ion-padding-start" icon={closeOutline}/>
+                                                </IonButton>
+                                            </IonCol>
+                                        </IonRow>
+                                    </IonGrid>
                                 </IonItem>
                             </form>
                         </>
