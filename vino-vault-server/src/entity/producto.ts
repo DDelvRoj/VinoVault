@@ -49,16 +49,17 @@ export class Producto {
     public set descripcion(v : string) {
         this._descripcion = v;
     }
-
+   @Column()
     public get imagen() : string {
         return this._imagen;
     }
-    
+ 
     
     public set imagen(imagen : string) {
         this._imagen = imagen;
     }
-
+ 
+    
     @Column()
     public get marca() : string {
         return this._marca;

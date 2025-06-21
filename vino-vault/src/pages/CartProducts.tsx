@@ -8,6 +8,7 @@ import  "./CartProducts.css";
 import { Producto } from "../data/types.ts";
 import React from "react";
 import { fetchProductosVender } from "../data/fetcher.ts";
+import { fetchData } from "../data/fetcher.ts";
 
 const CartProducts : React.FC = () => {
 
@@ -22,42 +23,50 @@ const CartProducts : React.FC = () => {
     useEffect(()=>{
         
         
-        const getCarroProductos = ()=>{
-            const productosCarrito = products.map(prod=>{
-                let producto:Producto={
-                    cantidad: 0,
-                    precio: 0
-                };
-                const cantidadProducto = shopCart.filter(p=>prod.id_producto && prod.id_producto===p).length;
-                if(cantidadProducto>0 && prod.cantidad){
-                    const evaluar = cantidadProducto>prod.cantidad;
-                    if(evaluar){
-                        mostrar(`Tenés ${prod.cantidad} del producto "${prod.nombre_producto}" en stock, no se puede pasar de la cantidad, se necesita reposición.`
-                            ,5000);
-                        let diferencia = cantidadProducto-prod.cantidad;
-                        let shopCartTemp = [...shopCart];
-                        shopCartTemp = shopCartTemp.map(p=>{
-                            if(prod.id_producto && prod.id_producto===p && diferencia>0){
-                                diferencia-=1;
-                                return null;
-                            }
-                            return p;
-                        }).filter(p=>p!=null);
-                        CartStore.update(s=>
-                            { s.product_ids=shopCartTemp}
-                        );
-                    } else {
-                        producto = Object.assign(Object.create(Object.getPrototypeOf(prod)), prod);
-                        producto.cantidad = cantidadProducto;
-                    }
+        const getCarroProductos = () => {
+            const productosCarrito = products.map(prod => {
+                const cantidadProducto = shopCart.filter(p => prod.id_producto && prod.id_producto === p).length;
+                
+                let producto: Producto = Object.assign(Object.create(Object.getPrototypeOf(prod)), prod);
+        
+                if (cantidadProducto > (prod.cantidad ?? 0)) {
+                    mostrar(
+                        `Tenés ${prod.cantidad ?? 0} del producto "${prod.nombre_producto}" en stock, no se puede pasar de la cantidad, se necesita reposición.`,
+                        5000
+                    );
+                    let diferencia = cantidadProducto - (prod.cantidad ?? 0);
+                    let shopCartTemp = [...shopCart];
+        
+                    shopCartTemp = shopCartTemp.flatMap(p => {
+                        if (prod.id_producto && prod.id_producto === p && diferencia > 0) {
+                            diferencia -= 1;
+                            return []; // elimina este item
+                        }
+                        return [p];
+                    });
+        
+                    CartStore.update(s => {
+                        s.product_ids = shopCartTemp;
+                    });
+        
+                    producto.cantidad = prod.cantidad ?? 0;
+                } else {
+                    producto.cantidad = cantidadProducto;
                 }
+        
                 return producto;
-            }).filter(p=>p.id_producto!=undefined);
+            }).filter(p => p.id_producto != undefined);
+        
             let suma = 0;
-            productosCarrito.forEach(p=>suma=suma+(p.cantidad??0)*(p.precio??0));
+            productosCarrito.forEach(p => {
+                suma = suma + (p.cantidad ?? 0) * (p.precio ?? 0);
+            });
+        
             setCartProducts(productosCarrito);
             setTotal(suma);
         }
+        
+        
         getCarroProductos();
     },[shopCart])
 
@@ -88,28 +97,41 @@ const CartProducts : React.FC = () => {
     }
 
     const handleVenta = async () => {
-        const dataAEnviar = cartProducts.map(p=>{
-            const nuevoProducto:Producto = {
-                id_producto:p.id_producto,
-                cantidad:p.cantidad
-            }
-            return nuevoProducto;
-        });
-        console.log(dataAEnviar);
-        
-        await fetchProductosVender(dataAEnviar).then((res)=>{
-            console.log('Exitooo', res);
-                setCartProducts([]);
-                CartStore.update(s=>{
-                    s.product_ids=[];
-                    s.total=0;
-            })
-        }).catch(err=>{
-            console.log(err);
-            
-        })
-     }
-
+        try {
+            // Preparar los datos a enviar
+            const dataAEnviar = cartProducts.map(p => {
+                return {
+                    id_producto: p.id_producto,
+                    cantidad: p.cantidad
+                };
+            });
+    
+            console.log('Productos a vender:', dataAEnviar);
+    
+            // Hacer la venta
+            const res = await fetchProductosVender(dataAEnviar);
+            console.log('Venta exitosa:', res);
+    
+            // Mostrar toast de éxito
+            mostrar('¡Venta realizada con éxito!', 3000);
+    
+            // Limpiar carrito
+            setCartProducts([]);
+            CartStore.update(s => {
+                s.product_ids = [];
+                s.total = 0;
+            });
+    
+            // Refrescar productos (actualizar stock en pantalla)
+            await fetchData();
+            console.log('Productos actualizados después de la venta');
+        } catch (err) {
+            console.error('Error al realizar la venta:', err);
+            mostrar('Ocurrió un error al realizar la venta.', 4000);
+        }
+    };
+    
+    
     return (
 
         <IonPage id="category-page" className="categoryPage">

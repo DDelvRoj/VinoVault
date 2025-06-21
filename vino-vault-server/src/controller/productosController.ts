@@ -1,247 +1,115 @@
 import { Router, Request, Response } from "express";
 import { authenticateToken } from "../middleware/authMiddleware";
-import buscarCodigoDeBarra from "../service/webScrapingService";
-import { Producto as ProductoInterface } from '../type'
-import { ultimosCambios } from "../middleware/ultimosCambiosMiddleware";
 import { ConexionDataBase } from "../model/conexionBD";
-import { ProductoService } from '../service/productoService';
-import { ProductoTempService } from "../service/productoTempService";
+import { ProductoService } from "../service/productoService";
 import { Producto } from "../entity/producto";
-import { ProductoTemp } from "../entity/productoTemp";
 import { getConexionCargada } from "../util/conexionUtil";
-import { borrarImagen, buscarImagen, guardarImagen } from "../util/imagenesUtil";
 
 const productosRouter = Router();
 
-productosRouter.get('/productos/:id',authenticateToken, async(req:Request, res:Response)=>{
-
-  const producto:Producto = new Producto({id_producto:req.params['id']});
-  const conexion:ConexionDataBase = getConexionCargada(req);
-
-  try {  
-
-    await conexion.conectar();
-    const resultado = await new ProductoService(conexion).buscarProducto(producto);
-    await conexion.desconectar();
-
-    res.status(200).json(resultado);
-
-  } catch (error) {
-
-    console.log(error);
-    res.status(500).json({error:error});
-
-  }
-});
-productosRouter.put('/productos', authenticateToken, async(req:Request, res:Response)=>{
-
-  const productoMod:ProductoInterface = req.body as ProductoInterface;
-  const conexion:ConexionDataBase = getConexionCargada(req);
-
-  try {
-    
-    const productoService:ProductoService = new ProductoService(conexion);
-    await conexion.conectar();
-    const producto:Producto = new Producto(productoMod);
-    
-    if(!productoMod.id_producto){
-
-      await conexion.desconectar();
-      res.status(401).json({error:'El producto posee parametros inválidos.'});
-
-    }
-    if(productoMod.imagen){
-
-      guardarImagen(productoMod.imagen,productoMod.id_producto);
-
-    }
-
-    await productoService.modificarProducto(producto);
-    await conexion.desconectar();
-
-    res.status(201).json({msj:'Modificación exitosa.'});
-
-  } catch (error) {
-
-    res.status(500).json({error:`Error al modificar el producto: ${error}`})
-
-  }
-})
-
-productosRouter.post('/productos',authenticateToken, async(req:Request, res:Response)=>{
-  console.log('Agregando...');
-  
-  const conexion:ConexionDataBase = getConexionCargada(req);
-  const productoService:ProductoService = new ProductoService(conexion);
-  const productoInsertable:ProductoInterface = req.body as ProductoInterface;
-
-  try {
-    
-    await conexion.conectar();
-    const producto: Producto = new Producto(productoInsertable);
-    console.log(productoInsertable.imagen.substring(0,20));
-    
-    if(productoInsertable.imagen){
-      borrarImagen(productoInsertable.ean);
-      guardarImagen(productoInsertable.imagen,productoInsertable.ean);
-    }
-
-    await productoService.crearProducto(producto);
-    
-    res.status(201).json({estado:'Inserción exitosa.'})
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({error:`Error al insertar los productos: ${error}`})
-  } finally {
-    await conexion.desconectar();
-  }
-})
-
-productosRouter.get('/productos/listar/todos',authenticateToken, async(req:Request, res:Response)=>{
-
-  const conexion:ConexionDataBase = getConexionCargada(req);
-
-  try {
-    
-    await conexion.conectar();
-    let resultado = (await new ProductoService(conexion).listarProductos() as Producto[]);
-    
-    for (const r of resultado) {
-      const id = r.id_producto.toString();
-      const ean = r.ean;
-      try {
-
-        const imagenEan = await buscarImagen(ean);
-        const imagenId = await buscarImagen(id);
-
-        if(imagenId){
-          r.imagen = imagenId;
-        } else if(imagenEan){
-          r.imagen = imagenEan;
-          guardarImagen(imagenEan,id);
-          borrarImagen(ean);
-        }
-
-      } catch (error) {
-        console.error('Error al buscar y convertir la imagen:', error);
-      }
-    }
-
-    const productoDataLength:string = Buffer.byteLength(JSON.stringify(resultado),'utf-8').toString();
-
-    res.appendHeader('Content-Length',productoDataLength);
-
-    res.status(200).json(resultado);
-
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({error:error});
-  } finally {
-    await conexion.desconectar();
-  }
-})
-
-productosRouter.get('/productos/codigo/:id', authenticateToken, ultimosCambios(1000000), async (req: Request, res: Response) => {
-
-  const conexion: ConexionDataBase = getConexionCargada(req);
-  const codigo = req.params.id;
-  const productoServ: ProductoService = new ProductoService(conexion);
-  const productoTempServ: ProductoTempService = new ProductoTempService(conexion);
-
-  const buscarProducto = async (): Promise<ProductoInterface | ProductoTemp | null> => {
+// GET - Listar todos
+productosRouter.get('/productos/listar/todos', authenticateToken, async (req: Request, res: Response) => {
+    const conexion = getConexionCargada(req);
+    const productoService = new ProductoService(conexion);
 
     try {
-
-      await conexion.conectar();
-      
-      let resultado: ProductoInterface | ProductoTemp | undefined = await productoServ.buscarProducto(new Producto({ ean: codigo }));
-
-      if (!resultado) {
-        resultado = await productoTempServ.buscarProducto(new ProductoTemp({ ean: codigo }));
-        if (resultado?.imagen) {
-          guardarImagen(resultado.imagen, resultado.ean);
-        }
-        if (!resultado) {
-          resultado = await buscarCodigoDeBarra(codigo);
-          await productoTempServ.crearProducto(new ProductoTemp(resultado));
-        }
-      }
-
-      return resultado ?? null;
-      
+        await conexion.conectar();
+        const resultado = await productoService.listarProductos();
+        res.status(200).json(resultado);
     } catch (error) {
-      console.error('Error al obtener el producto:', error);
-      throw error;
+        res.status(500).json({ error: `Error al listar productos: ${error}` });
+    } finally {
+        await conexion.desconectar();
     }
-  };
-
-  try {
-    const resultado = await buscarProducto();
-
-    if (resultado) {
-      const productoDataLength = Buffer.byteLength(JSON.stringify(resultado), 'utf-8').toString();
-      res.setHeader('Content-Length', productoDataLength);
-      res.json(resultado);
-    } else {
-      res.status(404).json({
-        error: 'No logramos encontrar el producto requerido en ninguna base de datos. Cabe la posibilidad de que el producto buscado haya caído en falsificación, no tiene documentos en orden, o simplemente no exista. En todo caso recomendamos ingresar el producto manualmente.'
-      });
-    }
-  } catch (error) {
-    console.error('Error al obtener el producto:', error);
-    res.status(500).json({ error: `Error al obtener el producto: ${error}` });
-  } finally {
-    await conexion.desconectar();
-  }
 });
 
+// POST - Crear
+productosRouter.post('/productos', authenticateToken, async (req: Request, res: Response) => {
+    const conexion = getConexionCargada(req);
+    const productoService = new ProductoService(conexion);
+    const productoData = req.body;
+
+    try {
+        await conexion.conectar();
+        const nuevoProducto = new Producto(productoData);
+        await productoService.crearProducto(nuevoProducto);
+        res.status(201).json({ msj: 'Producto creado exitosamente' });
+    } catch (error) {
+        res.status(500).json({ error: `Error al crear producto: ${error}` });
+    } finally {
+        await conexion.desconectar();
+    }
+});
+
+// PUT - Modificar
+productosRouter.put('/productos', authenticateToken, async (req: Request, res: Response) => {
+    const conexion = getConexionCargada(req);
+    const productoService = new ProductoService(conexion);
+    const productoData = req.body;
+
+    try {
+        await conexion.conectar();
+        const productoMod = new Producto(productoData);
+        await productoService.modificarProducto(productoMod);
+        res.status(200).json({ msj: 'Producto modificado exitosamente' });
+    } catch (error) {
+        res.status(500).json({ error: `Error al modificar producto: ${error}` });
+    } finally {
+        await conexion.desconectar();
+    }
+});
+
+// DELETE - Eliminar (CORRECTO)
+productosRouter.delete('/productos/:id', authenticateToken, async (req: Request, res: Response) => {
+    const conexion = getConexionCargada(req);
+    const productoService = new ProductoService(conexion);
+    const id_producto = req.params.id;
+
+    try {
+        await conexion.conectar();
+        const productoEliminar = new Producto({ id_producto });
+        await productoService.eliminarProducto(productoEliminar);
+        res.status(200).json({ msj: 'Producto eliminado exitosamente' });
+    } catch (error) {
+        res.status(500).json({ error: `Error al eliminar producto: ${error}` });
+    } finally {
+        await conexion.desconectar();
+    }
+});
+
+// PUT - Vender productos
 productosRouter.put('/productos/vender', authenticateToken, async (req: Request, res: Response) => {
-
-  const conexion: ConexionDataBase = getConexionCargada(req);
-  const productoServ: ProductoService = new ProductoService(conexion);
-  const productosAVender: ProductoInterface[] = req.body as ProductoInterface[];
+  const conexion = getConexionCargada(req);
+  const productoService = new ProductoService(conexion);
+  const productosAVender = req.body; // Array de productos [{ id_producto, cantidad }]
 
   try {
-    await conexion.conectar();
-    const productosAEvaluar: ProductoInterface[] = [];
+      await conexion.conectar();
 
-    for (const p of productosAVender) {
-      const producto = await productoServ.buscarProducto(new Producto({ id_producto: p.id_producto }));
-      
-      productosAEvaluar.push(producto);
-    }
+      for (const p of productosAVender) {
+          const productoDB = await productoService.buscarProducto(new Producto({ id_producto: p.id_producto }));
 
-    let msjError = '';
-    let exitoso: number = 0;
+          if (!productoDB) {
+              console.error(`Producto con id ${p.id_producto} no encontrado`);
+              continue;
+          }
 
-    for (const p of productosAEvaluar) {
-      const productoRestar = productosAVender.find(pv => pv.id_producto.toString() === p.id_producto.toString());
-      const cantActualizada = p.cantidad - productoRestar.cantidad ;
-      if (cantActualizada >= 0) {
-        console.log(cantActualizada);
-        
-        let producto = { ...p, cantidad: cantActualizada };
-        await productoServ.modificarProducto(new Producto(producto));
-        exitoso++;
-      } else {
-        msjError += `Producto con id ${p.id_producto} tiene stock insuficiente. `;
+          const nuevaCantidad = (productoDB.cantidad ?? 0) - (p.cantidad ?? 0);
+          const productoMod = new Producto({
+              id_producto: p.id_producto,
+              cantidad: nuevaCantidad < 0 ? 0 : nuevaCantidad
+          });
+
+          await productoService.modificarProducto(productoMod);
       }
-    }
 
-    if (productosAVender.length !== exitoso && exitoso > 0) {
-      return res.status(206).json({ msj: msjError });
-    }
-
-    if (exitoso === 0) {
-      return res.status(400).json({ msj: 'No se pudieron vender los productos. ' + msjError });
-    }
-
-    res.status(200).json({ msj: 'Productos vendidos exitosamente.' });
+      res.status(200).json({ msj: 'Venta realizada correctamente' });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+      res.status(500).json({ error: `Error al realizar venta: ${error}` });
   } finally {
-    await conexion.desconectar();
+      await conexion.desconectar();
   }
 });
+
 
 export default productosRouter;

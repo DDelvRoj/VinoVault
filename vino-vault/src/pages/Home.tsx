@@ -8,7 +8,7 @@ import "./Home.css";
 import { Producto } from "../data/types.ts";
 import React from "react";
 import { FavouritesStore } from "../data/FavouritesStore.ts";
-import { fetchData, fetchProductoAgregar, fetchProductoCodigoBarra, fetchProductoModificar } from "../data/fetcher.ts";
+import { fetchData, fetchProductoAgregar, fetchProductoCodigoBarra, fetchProductoModificar, fetchProductoEliminar } from "../data/fetcher.ts";
 import { useAutenticacion } from "../contexts/AutenticacionContext.tsx";
 import GestionarProductoModal, { GestionarProductoModalProps } from "../components/GestionarProductoModal.tsx";
 import { LoadingContext } from "../contexts/LoadingContext.tsx";
@@ -38,9 +38,7 @@ const Home : React.FC = () => {
     
     const { setEstaCargando, setDescripcion } = useContext(LoadingContext);
 
-
     useEffect(()=>{
-        
         if(products.length===0){
             fetchData();
         }
@@ -50,48 +48,58 @@ const Home : React.FC = () => {
         setsearchResults(products);
     },[products]);
 
+    // Infinite Scroll con slice ✅
     useEffect(() => {
-        if(amountLoaded>=0){
-            const productosTop = products?.map((p,i)=>{
-                if(i<=amountLoaded){
-                    return p;
-                }
-                return null
-            }).filter(p=>p!=null);
+        if(amountLoaded >= 0){
+            const productosTop = products.slice(0, amountLoaded + 1);
             setsearchResults(productosTop);
         }
-    }, [amountLoaded]);
+    }, [amountLoaded, products]);
 
     const updateProductos = async (event: CustomEvent<RefresherEventDetail>)=> {
-       await fetchData().finally(()=>event.detail.complete());
+        await fetchData().finally(()=>event.detail.complete());
     }
-
 
     const handleEditarProducto = async (producto:Producto)=> {
         setEstaCargando(true);
-        setDescripcion('Modificando Producto...')
+        setDescripcion('Modificando Producto...');
         
         const productoNuevo = {...producto};
 
-
-        Object.keys(producto).forEach((key)=>{
-            if(productoNuevo[key] === productoEditar[key] && key !='id_producto' ) {
+        Object.keys(producto).forEach((key)=> {
+            if(productoNuevo[key] === productoEditar[key] && key !== 'id_producto') {
                 productoNuevo[key] = undefined;
             }
-        })
+        });
 
         await fetchProductoModificar(productoNuevo).then((res)=>{
             setDescripcion(res.msj);
         }).finally(()=>{
             setEstaCargando(false);
             setDescripcion('');
-        })
+        });
+    }
+
+    // ✅ Nuevo: handleEliminarProducto
+    const handleEliminarProducto = async (producto: Producto) => {
+        setEstaCargando(true);
+        setDescripcion(`Eliminando producto ${producto.nombre_producto}...`);
+
+        await fetchProductoEliminar(producto.id_producto!).then((res)=>{
+            setDescripcion(res.msj);
+        }).catch(err=>{
+            console.log(err);
+        }).finally(()=>{
+            setEstaCargando(false);
+            setDescripcion('');
+            fetchData(); // recargar la lista
+        });
     }
 
     const fetchMore = async (e:any) => {
-		setAmountLoaded(prevAmount => (prevAmount + 6));
-		e.target.complete();
-	}
+        setAmountLoaded(prevAmount => (prevAmount + 6));
+        e.target.complete();
+    }
 
     const editarProducto = (e: any, producto:Producto) =>{
         e.preventDefault();
@@ -103,9 +111,9 @@ const Home : React.FC = () => {
         mostrarModal();
     }
 
-    const mostrarModal = ()=>{
+    const mostrarModal = () => {
         mostrar({
-            onDidDismiss: async ()=>{
+            onDidDismiss: async () => {
                 setProductoEditar({cantidad:0,precio:0});
                 await fetchData();
             }
@@ -115,31 +123,30 @@ const Home : React.FC = () => {
     const agregarProducto = (e: any) =>{
         e.preventDefault();
         e.stopPropagation();
+
         const fetchProductosAgregarLoading = async (producto:Producto) => {
             setDescripcion(`Agregando a ${producto.nombre_producto}...`);
             setEstaCargando(true);
             await fetchProductoAgregar(producto).then(res=>{
-                
                 setDescripcion(res.msj);
                 setProductoEditar(res);
                 console.log(res);
-                
                 return res;
             }).catch(err=>{
-                console.log(err)
-            })
-            .finally(()=>setEstaCargando(false));
+                console.log(err);
+            }).finally(()=>setEstaCargando(false));
         }
 
         const fetchBuscarProductos = async (producto:Producto) =>{
-            setDescripcion(`Buscando al Codigo ${producto.ean}...`);
+            setDescripcion(`Buscando al Código ${producto.ean}...`);
             setEstaCargando(true);
             return await fetchProductoCodigoBarra(producto).then(res=>{
-                setDescripcion(`Encontrado ${res.nombre_producto}...`)
+                setDescripcion(`Encontrado ${res.nombre_producto}...`);
                 setProductoEditar(res);
                 return res;
             }).finally(()=>setEstaCargando(false));
         }
+
         setProductoEditar({cantidad:0,precio:0});
         accionBusRef.current = fetchBuscarProductos;
         setRequiereScanner(true);
@@ -147,95 +154,106 @@ const Home : React.FC = () => {
         mostrarModal();
     }
 
-    const search = async (e:React.KeyboardEvent<HTMLIonSearchbarElement>) => {
+    const search = async (e: React.KeyboardEvent<HTMLIonSearchbarElement>) => {
         const searchVal = e.currentTarget.value;
-        if (searchVal !='' && searchVal && searchVal!=undefined) {
-            const tempResults :Producto[]|undefined= products?.filter(p => p.nombre_producto?.toLowerCase().includes((searchVal?searchVal.toLowerCase():'')));
-            if (tempResults!==undefined){
+        if (searchVal !='' && searchVal && searchVal !== undefined) {
+            const tempResults: Producto[] | undefined = products?.filter(p => p.nombre_producto?.toLowerCase().includes((searchVal ? searchVal.toLowerCase() : '')));
+            if (tempResults !== undefined) {
                 setsearchResults(tempResults);
             }
-        }else {
-            setsearchResults(products)
+        } else {
+            setsearchResults(products);
         }
     }
 
-   
-
     return (
-
         <IonPage id="category-page" className="categoryPage">
             <IonHeader>
-				<IonToolbar>
-					<IonTitle>Productos</IonTitle>
+                <IonToolbar>
+                    <IonTitle>Productos</IonTitle>
                     <IonButtons slot="end">
-						<IonBadge color="danger">
+                        <IonBadge color="danger">
                             { favoritos.length }
                         </IonBadge>
-						<IonButton color="danger" routerLink="/favourites">
-							<IonIcon icon={ heart } />
-						</IonButton>
-						<IonBadge color="dark">
+                        <IonButton color="danger" routerLink="/favourites">
+                            <IonIcon icon={ heart } />
+                        </IonButton>
+                        <IonBadge color="dark">
                             { shopCart.length }
                         </IonBadge>
-						<IonButton color="dark" routerLink="/cart">
-							<IonIcon icon={ cart } />
-						</IonButton>
-                        <IonButton id="btn-cerrar-sesion" title="Salir" color="danger">
-                            <IonIcon icon={exit} />
+                        <IonButton color="dark" routerLink="/cart">
+                            <IonIcon icon={ cart } />
                         </IonButton>
-					</IonButtons>
-				</IonToolbar>
-			</IonHeader>
-			<IonContent fullscreen>
+                        <IonButton id="btn-cerrar-sesion" title="Salir" color="danger">
+                            <IonIcon icon={ exit } />
+                        </IonButton>
+                    </IonButtons>
+                </IonToolbar>
+            </IonHeader>
+
+            <IonContent fullscreen>
                 <IonRefresher slot="fixed" pullFactor={0.5} pullMin={100} pullMax={200} onIonRefresh={updateProductos}>
-                    <IonRefresherContent >
-                    </IonRefresherContent>
+                    <IonRefresherContent />
                 </IonRefresher>
+
                 <IonSearchbar className="search" onKeyUp={ search } placeholder="Intenta con 'Vino'" searchIcon={ searchOutline } animated={ true } />
-                
+
                 <IonGrid>
                     <IonRow className="ion-text-center">
                         <IonCol size="12">
                             <IonNote>{ (searchResults && searchResults.length) } { (searchResults.length > 1 || searchResults.length === 0) ? " productos encontrados." : " producto encontrado." } </IonNote>
                         </IonCol>
                     </IonRow>
+
                     <IonRow>
                         { searchResults && searchResults.map((product, index) => {
                             if ((index <= amountLoaded)) {
                                 return (
-                                    <ProductCard key={ `producto_${ index }`} product={ product } index={ index } cartRef={ cartRef } editarProducto={editarProducto}  />
+                                    <ProductCard
+                                        key={`producto_${index}`}
+                                        product={product}
+                                        index={index}
+                                        cartRef={cartRef}
+                                        editarProducto={editarProducto}
+                                        eliminarProducto={handleEliminarProducto} // ✅ Se pasa eliminarProducto
+                                    />
                                 );
                             }
                             return null;
-                        }).filter(o=>o!=null)
-                        }
+                        }).filter(o => o != null) }
                     </IonRow>
                 </IonGrid>
+
                 <IonInfiniteScroll threshold="100px" onIonInfinite={ fetchMore }>
-                <IonInfiniteScrollContent loadingSpinner="bubbles" loadingText="Cargando más..."/>
+                    <IonInfiniteScrollContent loadingSpinner="bubbles" loadingText="Cargando más..." />
                 </IonInfiniteScroll>
+
                 <IonFab vertical="bottom" horizontal="end" slot="fixed">
                     <IonFabButton color="dark">
-                        <IonIcon icon={settingsOutline} />
-                    </IonFabButton> 
+                        <IonIcon icon={ settingsOutline } />
+                    </IonFabButton>
                     <IonFabList side="top">
-                        <IonFabButton color="dark" onClick={(e)=>agregarProducto(e)} title="Registrar Productos">
-                            <IonIcon icon={addOutline} />
+                        <IonFabButton color="dark" onClick={(e) => agregarProducto(e)} title="Registrar Productos">
+                            <IonIcon icon={ addOutline } />
                         </IonFabButton>
-                        <IonFabButton className={!admin?'ion-hide':''} color="dark" routerLink="/ajustes-usuario" title="Ajustes de Usuario">
-                            <IonIcon icon={personCircleOutline} />
+                        <IonFabButton className={!admin ? 'ion-hide' : ''} color="dark" routerLink="/ajustes-usuario" title="Ajustes de Usuario">
+                            <IonIcon icon={ personCircleOutline } />
                         </IonFabButton>
                         <IonFabButton className="ion-hide" color="dark" routerLink="/ventas" title="Ventas">
-                            <IonIcon icon={cashOutline} />
+                            <IonIcon icon={ cashOutline } />
                         </IonFabButton>
                     </IonFabList>
                 </IonFab>
             </IonContent>
-            <IonAlert trigger="btn-cerrar-sesion" header="Cerrar Sesión" message="¿Realmente desea cerrar sesión?"
-            buttons={[
-                {text:'Si',handler:logout},
-                {text:'No', role:"cancel"}
-            ]}
+
+            <IonAlert
+                trigger="btn-cerrar-sesion"
+                header="Cerrar Sesión"
+                message="¿Realmente desea cerrar sesión?"
+                buttons={[
+                    { text: 'Si', handler: logout },
+                    { text: 'No', role: "cancel" }
+                ]}
             />
         </IonPage>
     );

@@ -28,9 +28,9 @@ export class QueryExecuterModel {
 
     @manejarErrores
     async insertar(item: any): Promise<void> {
-        const params:[]= item['params'].filter(i=>!this.esUUID(i));
-        await this.conexion.getClient().execute(item['insert'],params,{prepare:true});
+        await this.conexion.getClient().execute(item['insert'], item['params'], { prepare: true });
     }
+    
     
     @manejarErrores
     async modificar(item: any): Promise<void> {

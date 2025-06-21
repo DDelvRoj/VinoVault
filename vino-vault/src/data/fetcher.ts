@@ -2,24 +2,25 @@ import { CapacitorHttp } from "@capacitor/core";
 import { ProductStore } from "./ProductStore.ts";
 import { vaciarTokenStore } from "./TokenStore.ts";
 import { Persona, Producto } from "./types.ts";
-const link:string = "http://localhost:3000";
-//'https://vinovault.loca.lt';
 
-export const fetchData = async () =>{
-  const products:Producto[] = (await fetchProductos()).map(p=>{
-    if(p.imagen){
+const link: string = "http://localhost:3000";
+// 'https://vinovault.loca.lt';
+
+export const fetchData = async () => {
+  const products: Producto[] = (await fetchProductos()).map(p => {
+    if (p.imagen) {
       p.imagen = `data:image/png;base64,${p.imagen}`;
     }
     return p;
   });
-  
-  ProductStore.update(s=>{
+
+  ProductStore.update(s => {
     s.products = products;
-    if(products.length>0){
-      localStorage.setItem('productos',JSON.stringify(products));
+    if (products.length > 0) {
+      localStorage.setItem('productos', JSON.stringify(products));
     }
   });
-}
+};
 
 interface FetchConfig {
   method: string;
@@ -56,7 +57,7 @@ const apiFetch = async <T>(
 
     if (!response || response.status >= 400) {
       const errorMessage = `Error: ${response.status}`;
-      switch(response.status){
+      switch (response.status) {
         case 401:
           vaciarTokenStore();
           break;
@@ -71,57 +72,75 @@ const apiFetch = async <T>(
   }
 };
 
-const authHeader = async () =>{
+const authHeader = async () => {
   const token = localStorage.getItem('token');
+  console.log('Token que se va a enviar:', token); // para debug
   const authHeader = {
-    'Authorization':`Bearer ${token}`
+    'Authorization': `Bearer ${token}`
   };
   return authHeader;
-}
+};
 
-export const fetchLogin = async (username:string, password:string) => {
+export const fetchLogin = async (username: string, password: string) => {
   const body = { username, password };
-  return apiFetch<any>('login', 'POST', undefined, body);
+  const response = await apiFetch<any>('login', 'POST', undefined, body);
+  
+  // GUARDAR TOKEN CORRECTAMENTE
+  if (response && response.token) {
+    console.log('Token recibido en login:', response.token);
+    localStorage.setItem('token', response.token);
+  } else {
+    console.warn('No se recibió token en login.');
+  }
+
+  return response;
 };
 
-export const fetchMiSesion = async ()=>{
-  return apiFetch<any>('login','GET', await authHeader()); 
-}
-
-export const fetchPersonasBorrar = async (id:string) =>{
-  return apiFetch<any>(`personas/${id}`,'DELETE', await authHeader());
-}
-
-export const fetchPersonas = async () => { 
-  return apiFetch<Persona[]>('personas','GET', await authHeader());
+export const fetchMiSesion = async () => {
+  return apiFetch<any>('mi-sesion', 'GET', await authHeader());
 };
 
-export const fetchPersonasAgregar = async (persona:Persona) =>{
-  return apiFetch<any>('personas','POST', await authHeader(), persona);
-}
+export const fetchPersonasBorrar = async (id: string) => {
+  return apiFetch<any>(`personas/${id}`, 'DELETE', await authHeader());
+};
 
-export const fetchPersonasModificar = async (persona:Persona) =>{
-  return apiFetch<any>('personas','PUT', await authHeader(), persona);
-}
+export const fetchPersonas = async () => {
+  return apiFetch<Persona[]>('personas', 'GET', await authHeader());
+};
+
+export const fetchPersonasAgregar = async (persona: Persona) => {
+  return apiFetch<any>('personas', 'POST', await authHeader(), persona);
+};
+
+export const fetchPersonasModificar = async (persona: Persona) => {
+  return apiFetch<any>('personas', 'PUT', await authHeader(), persona);
+};
 
 const fetchProductos = async () => {
-  return apiFetch<Producto[]>('productos/listar/todos','GET', await authHeader());
+  return apiFetch<Producto[]>('productos/listar/todos', 'GET', await authHeader());
 };
 
-export const fetchProductosVender = async (productos:Producto[]) => {
-  return apiFetch<any>('productos/vender','PUT', await authHeader(), productos);
-}
+export const fetchProductosVender = async (productos: Producto[]) => {
+  return apiFetch<any>('productos/vender', 'PUT', await authHeader(), productos);
+};
 
-export const fetchProductoAgregar = async (producto:Producto) => {
-  return apiFetch<any>(`productos`,'POST', await authHeader(), producto);
-}
-export const fetchProductoModificar = async (producto:Producto) => {
+export const fetchProductoAgregar = async (producto: Producto) => {
+  return apiFetch<any>(`productos`, 'POST', await authHeader(), producto);
+};
+
+export const fetchProductoModificar = async (producto: Producto) => {
   return apiFetch<any>('productos', "PUT", await authHeader(), producto);
-}
-export const fetchProductoCodigoBarra = async (producto:Producto) => {
-  return apiFetch<Producto>(`productos/codigo/${producto.ean}`,'GET', await authHeader());
 };
 
-export const fetchProductById = async (id:string) => {
-  return apiFetch<Producto>(`productos/${id}`,'GET', await authHeader());
+export const fetchProductoEliminar = async (id_producto: string) => {
+  return apiFetch<any>(`productos/${id_producto}`, 'DELETE', await authHeader());
+};
+
+
+export const fetchProductoCodigoBarra = async (producto: Producto) => {
+  return apiFetch<Producto>(`productos/codigo/${producto.ean}`, 'GET', await authHeader());
+};
+
+export const fetchProductById = async (id: string) => {
+  return apiFetch<Producto>(`productos/${id}`, 'GET', await authHeader());
 };

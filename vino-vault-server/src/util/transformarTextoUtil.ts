@@ -1,10 +1,15 @@
-export function transformarTexto(username:string){
+export function transformarTexto(username: string): string {
+    if (typeof username !== 'string' || username.trim() === '') {
+        console.warn('transformarTexto: username vacío o no válido');
+        return '';
+    }
+
     let resultado = '';
     for (const letra of username) {
         if (letra === ' ') {
             resultado += '% ';
         } else {
-            const nuevaLetra = String.fromCharCode((letra.charCodeAt(0)+1!=32?letra.charCodeAt(0)+1:letra.charCodeAt(0)));
+            const nuevaLetra = String.fromCharCode((letra.charCodeAt(0) + 1 != 32 ? letra.charCodeAt(0) + 1 : letra.charCodeAt(0)));
             if (nuevaLetra === nuevaLetra.toUpperCase()) {
                 resultado += nuevaLetra.toLowerCase();
             } else {
@@ -13,17 +18,18 @@ export function transformarTexto(username:string){
             resultado = resultado + ' ';
         }
     }
-    
+
     return invertirPalabras(resultado);
 }
-export function destransformarTexto(texto:string){
+
+export function destransformarTexto(texto: string) {
     let resultado = '';
-    const textoR = texto.replace(/\s/g,'');
+    const textoR = texto.replace(/\s/g, '');
     for (const letra of textoR) {
         if (letra === '%') {
             resultado += ' ';
         } else {
-            const nuevaLetra = String.fromCharCode((letra.charCodeAt(0)-1!=32?letra.charCodeAt(0)-1:letra.charCodeAt(0)));
+            const nuevaLetra = String.fromCharCode((letra.charCodeAt(0) - 1 != 32 ? letra.charCodeAt(0) - 1 : letra.charCodeAt(0)));
             if (nuevaLetra === nuevaLetra.toUpperCase()) {
                 resultado += nuevaLetra.toLowerCase();
             } else {
@@ -34,6 +40,6 @@ export function destransformarTexto(texto:string){
     return invertirPalabras(resultado);
 }
 
-function invertirPalabras(texto:string){
+function invertirPalabras(texto: string) {
     return texto.trim().split('').reverse().join('');
 }
